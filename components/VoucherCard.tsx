@@ -46,9 +46,7 @@ export function VoucherCard({ voucher, vehicle, onDelete, onClick }: VoucherCard
                 className="text-muted-foreground hover:text-destructive"
                 onClick={(e) => {
                   e.stopPropagation();
-                  if (confirm(`Are you sure you want to delete this voucher for ${voucher.destination}?`)) {
-                    onDelete();
-                  }
+                  onDelete();
                 }}
               >
                 <Trash2 className="w-4 h-4" />
@@ -61,7 +59,7 @@ export function VoucherCard({ voucher, vehicle, onDelete, onClick }: VoucherCard
         <div className="grid grid-cols-2 gap-4 text-sm">
           <div className="flex items-center gap-2">
             <MapPin className="w-4 h-4 text-primary" />
-            <span className="font-medium">{voucher.destination}</span>
+            <span className="font-medium">From: {voucher.origin}</span>
           </div>
           <div className="flex items-center gap-2">
             <Clock className="w-4 h-4 text-muted-foreground" />
@@ -78,16 +76,10 @@ export function VoucherCard({ voucher, vehicle, onDelete, onClick }: VoucherCard
         </div>
 
         <div className="mt-4 pt-4 border-t flex items-center justify-between">
-          <div>
-            <span className="text-sm text-muted-foreground">Fare:</span>
-            <span className="ml-2 font-bold text-lg">Rs. {voucher.fare.toLocaleString()}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">
-              {formatDate(new Date(voucher.date))}
-            </span>
-            {onClick && <ChevronRight className="w-4 h-4 text-muted-foreground" />}
-          </div>
+          <span className="text-sm text-muted-foreground">
+            {formatDate(new Date(voucher.date))}
+          </span>
+          {onClick && <ChevronRight className="w-4 h-4 text-muted-foreground" />}
         </div>
       </CardContent>
     </Card>

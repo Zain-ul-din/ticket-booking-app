@@ -1,6 +1,8 @@
+const { contextBridge, ipcRenderer } = require("electron");
+
 (() => {
-    const { contextBridge, ipcRenderer } = require("electron");
-    contextBridge.exposeInMainWorld("customAPI", {
-        selectFolder: () => ipcRenderer.invoke("dialog:openDirectory"),
-    })
-})()
+  contextBridge.exposeInMainWorld("customAPI", {
+    getPrinters: () => ipcRenderer.invoke("get-printers"),
+    printReceipt: () => ipcRenderer.invoke("print-receipt"),
+  });
+})();

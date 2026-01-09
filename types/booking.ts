@@ -3,25 +3,20 @@
  */
 
 /**
- * Seat types available in vehicles
- */
-export type SeatType = 'standard' | 'folding' | 'driver';
-
-/**
  * Vehicle types supported by the system
  */
 export type VehicleType = 'highroof' | 'bus';
 
 /**
  * Represents a single seat in a vehicle
+ * Note: Booking status is tracked via voucher.bookedSeats[], not on the seat itself
  */
 export interface Seat {
-  id: string;              // Unique identifier (e.g., "A1", "B2", "DRIVER")
+  id: number;              // Unique numeric identifier (e.g., 0=driver, 1-18=passenger seats)
   row: number;             // Physical row position (0-based)
-  column: number;          // Physical column position (0-based)
-  type: SeatType;          // Type of seat
-  isBooked: boolean;       // Current booking status
-  passengerName?: string;  // Name of passenger if booked
+  col: number;             // Physical column position (0-based)
+  isFolding: boolean;      // True if this is a folding seat
+  isDriver: boolean;       // True if this is the driver seat
 }
 
 /**
@@ -46,11 +41,25 @@ export interface Passenger {
 }
 
 /**
- * Represents a booked seat with passenger details
+ * Represents a route with origin, destination, and fare
+ */
+export interface Route {
+  id: string;                    // Unique identifier
+  origin: string;                // Starting city
+  destination: string;           // Destination city
+  fare: number;                  // Price in Rs.
+}
+
+/**
+ * Represents a booked seat with passenger details and destination
  */
 export interface BookedSeat {
-  seatId: string;                // Seat ID (e.g., "A1", "B2")
+  seatId: number;                // Seat ID (numeric, e.g., 1, 2, 15)
   passenger: Passenger;          // Passenger information
+  destination: string;           // Passenger's destination
+  fare: number;                  // Base fare for this route
+  discount: number;              // Discount amount applied
+  finalFare: number;             // Final fare after discount (fare - discount)
 }
 
 /**
@@ -60,9 +69,8 @@ export interface Voucher {
   id: string;                    // Unique identifier (UUID)
   vehicleId: string;             // Reference to Vehicle.id
   date: string;                  // ISO date string (YYYY-MM-DD)
-  destination: string;           // Destination city/location
+  origin: string;                // Starting city for this trip
   departureTime: string;         // 24-hour format (HH:mm)
-  fare: number;                  // Ticket fare in Rs.
   driverName: string;            // Driver's name
   driverMobile: string;          // Driver's mobile number
   bookedSeats: BookedSeat[];     // Array of booked seats with passenger info

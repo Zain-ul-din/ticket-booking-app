@@ -2,7 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+@layer base {
+  :root {
   --background: 40 33% 98%;
   --foreground: 25 30% 15%;
 
@@ -88,90 +91,54 @@
   --seat-booked: 25 95% 55%;
   --seat-folding: 220 14% 50%;
   --seat-driver: 220 80% 50%;
+  }
 }
 
-* {
-  @apply border-border;
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-family: 'Inter', sans-serif;
+  }
 }
 
-body {
-  @apply bg-background text-foreground font-sans antialiased;
-  font-family: "Inter", sans-serif;
-}
+@layer components {
+  .seat {
+    @apply w-12 h-12 rounded-lg flex items-center justify-center font-semibold text-sm cursor-pointer transition-all duration-200 border-2;
+  }
 
-.seat {
-  @apply w-12 h-12 rounded-lg flex items-center justify-center font-semibold text-sm cursor-pointer transition-all duration-200 border-2;
-}
+  .seat-available {
+    @apply bg-success/20 border-success text-success hover:bg-success hover:text-success-foreground;
+  }
 
-.seat-available {
-  @apply bg-success/20 border-success text-success hover:bg-success hover:text-success-foreground;
-}
+  .seat-booked {
+    @apply bg-primary/20 border-primary text-primary opacity-50;
+  }
 
-.seat-booked {
-  @apply bg-primary/20 border-primary text-primary;
-}
+  .seat-folding {
+    @apply bg-muted border-muted-foreground/30 text-muted-foreground;
+  }
 
-.seat-folding {
-  @apply bg-muted border-muted-foreground/30 text-muted-foreground;
-}
+  .seat-driver {
+    @apply bg-blue-500/20 border-blue-500 text-blue-600;
+  }
 
-.seat-driver {
-  @apply bg-blue-500/20 border-blue-500 text-blue-600;
-}
+  .page-title {
+    @apply text-3xl font-bold text-foreground;
+  }
 
-.page-title {
-  @apply text-3xl font-bold text-foreground;
-}
+  .section-card {
+    @apply bg-card rounded-xl border border-border shadow-sm p-6;
+  }
 
-.section-card {
-  @apply bg-card rounded-xl border border-border shadow-sm p-6;
-}
+  .nav-button {
+    @apply flex flex-col items-center gap-3 p-6 rounded-xl bg-card border-2 border-border hover:border-primary hover:bg-primary/5 transition-all duration-200 cursor-pointer;
+  }
 
-.nav-button {
-  @apply flex flex-col items-center gap-3 p-6 rounded-xl bg-card border-2 border-border hover:border-primary hover:bg-primary/5 transition-all duration-200 cursor-pointer;
+  .nav-button-active {
+    @apply border-primary bg-primary/10;
+  }
 }
-
-.nav-button-active {
-  @apply border-primary bg-primary/10;
-}
-
-/* Stats card for dashboard */
-.stat-card {
-  @apply bg-card rounded-lg border border-border p-4 text-center;
-}
-
-/* Trip card for today's trips list */
-.trip-card {
-  @apply flex items-center gap-4 p-4 rounded-xl bg-muted/30 hover:bg-muted/50 transition-colors;
-}
-
-/*
-.scrollbar_hide::-webkit-scrollbar {
-  display: none;
-}
-
-.scrollbar_hide {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
-.scrollbar {
-  --scrollbarBG: #cfd8dc;
-  --thumbBG: #90a4ae;
-  scrollbar-width: thin;
-  scrollbar-color: var(--scrollbarBG) var(--scrollbarBG);
-}
-
-.scrollbar::-webkit-scrollbar {
-  width: 11px;
-}
-
-.scrollbar::-webkit-scrollbar-track {
-  background: var(--scrollbarBG);
-}
-
-.scrollbar::-webkit-scrollbar-thumb {
-  background-color: var(--thumbBG);
-  border-radius: 6px;
-  border: 3px solid var(--scrollbarBG);
-} */

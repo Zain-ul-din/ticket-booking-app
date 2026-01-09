@@ -16,6 +16,19 @@ export function formatDate(date: Date): string {
 }
 
 /**
+ * Format a date as "Day, DD Month YYYY" (e.g., "Monday, 08 January 2026")
+ * @param date - Date object to format
+ * @returns Formatted date string with day name and full month
+ */
+export function formatDateFull(date: Date): string {
+  const dayName = date.toLocaleDateString('en-US', { weekday: 'long' });
+  const day = date.getDate().toString().padStart(2, '0');
+  const month = date.toLocaleDateString('en-US', { month: 'long' });
+  const year = date.getFullYear();
+  return `${dayName}, ${day} ${month} ${year}`;
+}
+
+/**
  * Format a time string from 24-hour to 12-hour format
  * @param time - Time string in "HH:mm" format (e.g., "14:30")
  * @returns Formatted time string (e.g., "2:30 PM")

@@ -4,7 +4,7 @@
  */
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { Vehicle, Voucher } from '../types/booking';
+import { Vehicle, Voucher, Route } from '../types/booking';
 import { generateHighroofLayout, generateBusLayout } from '../utils/seatLayouts';
 import { getTodayString } from '../utils/dateUtils';
 
@@ -14,6 +14,7 @@ import { getTodayString } from '../utils/dateUtils';
 interface BookingState {
   vehicles: Vehicle[];
   vouchers: Voucher[];
+  routes: Route[];
 }
 
 /**
@@ -31,6 +32,13 @@ interface BookingContextType extends BookingState {
   removeVoucher: (voucherId: string) => void;
   getVoucherById: (voucherId: string) => Voucher | undefined;
 
+  // Route operations
+  addRoute: (route: Omit<Route, 'id'>) => string;
+  updateRoute: (routeId: string, updates: Partial<Route>) => void;
+  removeRoute: (routeId: string) => void;
+  getRouteById: (routeId: string) => Route | undefined;
+  getRoutesByOrigin: (origin: string) => Route[];
+
   // Computed values
   getTodaysVouchers: () => Voucher[];
   getVouchersForDate: (date: string) => Voucher[];
@@ -47,7 +55,7 @@ const DEFAULT_VEHICLES: Vehicle[] = [
     registrationNumber: 'HR-001',
     type: 'highroof',
     seats: generateHighroofLayout(),
-    totalSeats: 11,
+    totalSeats: 18, // 19 total seats minus 1 driver
   },
   {
     id: 'bus-1',
@@ -55,8 +63,18 @@ const DEFAULT_VEHICLES: Vehicle[] = [
     registrationNumber: 'BUS-001',
     type: 'bus',
     seats: generateBusLayout(),
-    totalSeats: 47,
+    totalSeats: 48, // 12 rows × 4 columns
   },
+];
+
+/**
+ * Default routes for initial state
+ */
+const DEFAULT_ROUTES: Route[] = [
+  { id: 'route-1', origin: 'Multan', destination: 'Lahore', fare: 1500 },
+  { id: 'route-2', origin: 'Multan', destination: 'Faisalabad', fare: 1200 },
+  { id: 'route-3', origin: 'Multan', destination: 'Islamabad', fare: 2500 },
+  { id: 'route-4', origin: 'Lahore', destination: 'Islamabad', fare: 1800 },
 ];
 
 /**
@@ -96,7 +114,7 @@ export function BookingProvider({ children }: BookingProviderProps) {
   const [state, setState] = useState<BookingState>(() => {
     // Only run on client side (not during SSR)
     if (typeof window === 'undefined') {
-      return { vehicles: DEFAULT_VEHICLES, vouchers: [] };
+      return { vehicles: DEFAULT_VEHICLES, vouchers: [], routes: DEFAULT_ROUTES };
     }
 
     try {
@@ -107,6 +125,30 @@ export function BookingProvider({ children }: BookingProviderProps) {
         // Validate that we have the required structure
         if (parsed.vehicles && Array.isArray(parsed.vehicles) &&
             parsed.vouchers && Array.isArray(parsed.vouchers)) {
+
+          // Check if data uses old structure (string IDs or 'type' field)
+          const hasOldStructure = parsed.vehicles.some(vehicle =>
+            vehicle.seats.some((seat: any) =>
+              typeof seat.id === 'string' || 'type' in seat || 'column' in seat
+            )
+          );
+
+          // Check if vouchers use old structure (destination/fare fields instead of origin)
+          const hasOldVoucherStructure = parsed.vouchers.some((voucher: any) =>
+            'destination' in voucher || 'fare' in voucher
+          );
+
+          if (hasOldStructure || hasOldVoucherStructure) {
+            console.warn('Detected old data structure. Clearing localStorage and using defaults.');
+            localStorage.removeItem(STORAGE_KEY);
+            return { vehicles: DEFAULT_VEHICLES, vouchers: [], routes: DEFAULT_ROUTES };
+          }
+
+          // Ensure routes exist (for backward compatibility)
+          if (!parsed.routes || !Array.isArray(parsed.routes)) {
+            parsed.routes = DEFAULT_ROUTES;
+          }
+
           return parsed;
         }
       }
@@ -115,7 +157,7 @@ export function BookingProvider({ children }: BookingProviderProps) {
     }
 
     // Return default state if loading failed or no saved state
-    return { vehicles: DEFAULT_VEHICLES, vouchers: [] };
+    return { vehicles: DEFAULT_VEHICLES, vouchers: [], routes: DEFAULT_ROUTES };
   });
 
   // Persist state to localStorage whenever it changes
@@ -216,10 +258,49 @@ export function BookingProvider({ children }: BookingProviderProps) {
     return voucher?.bookedSeats.length || 0;
   };
 
+  // Route operations
+
+  const addRoute = (route: Omit<Route, 'id'>): string => {
+    const id = `route-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const newRoute: Route = { ...route, id };
+
+    setState(prev => ({
+      ...prev,
+      routes: [...prev.routes, newRoute],
+    }));
+
+    return id;
+  };
+
+  const updateRoute = (routeId: string, updates: Partial<Route>): void => {
+    setState(prev => ({
+      ...prev,
+      routes: prev.routes.map(r =>
+        r.id === routeId ? { ...r, ...updates } : r
+      ),
+    }));
+  };
+
+  const removeRoute = (routeId: string): void => {
+    setState(prev => ({
+      ...prev,
+      routes: prev.routes.filter(r => r.id !== routeId),
+    }));
+  };
+
+  const getRouteById = (routeId: string): Route | undefined => {
+    return state.routes.find(r => r.id === routeId);
+  };
+
+  const getRoutesByOrigin = (origin: string): Route[] => {
+    return state.routes.filter(r => r.origin === origin);
+  };
+
   // Context value
   const value: BookingContextType = {
     vehicles: state.vehicles,
     vouchers: state.vouchers,
+    routes: state.routes,
     addVehicle,
     removeVehicle,
     getVehicleById,
@@ -230,6 +311,11 @@ export function BookingProvider({ children }: BookingProviderProps) {
     getTodaysVouchers,
     getVouchersForDate,
     getBookedSeatsCount,
+    addRoute,
+    updateRoute,
+    removeRoute,
+    getRouteById,
+    getRoutesByOrigin,
   };
 
   return (

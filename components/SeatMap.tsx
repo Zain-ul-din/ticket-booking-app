@@ -18,8 +18,8 @@ export function SeatMap({
   onSeatClick,
 }: SeatMapProps) {
   // Get grid dimensions from seats
-  const maxRow = Math.max(...seats.map(s => s.row));
-  const maxCol = Math.max(...seats.map(s => s.column));
+  const maxRow = seats.length > 0 ? Math.max(...seats.map(s => s.row)) : 0;
+  const maxCol = seats.length > 0 ? Math.max(...seats.map(s => s.col)) : 0;
 
   // Create a 2D grid
   const grid: (Seat | null)[][] = Array(maxRow + 1)
@@ -28,33 +28,36 @@ export function SeatMap({
 
   // Fill the grid with seats
   seats.forEach(seat => {
-    grid[seat.row][seat.column] = seat;
+    grid[seat.row][seat.col] = seat;
   });
 
   // Check if seat is booked
-  const getSeatBooking = (seatId: string) => {
+  const getSeatBooking = (seatId: number) => {
     return bookedSeats.find(bs => bs.seatId === seatId);
   };
 
   const getSeatClass = (seat: Seat, booking?: BookedSeat) => {
     const baseClass = compact ? 'w-8 h-8 text-xs' : 'w-12 h-12 text-sm';
+    const isBooked = !!booking;
+    const isDriver = seat.isDriver;
+    const isFolding = seat.isFolding;
 
-    if (seat.type === 'driver') {
-      return `${baseClass} seat seat-driver cursor-not-allowed`;
+    if (isDriver) {
+      return `${baseClass} seat seat-driver cursor-default`;
     }
 
     if (readOnly) {
-      if (booking) {
+      if (isBooked) {
         return `${baseClass} seat seat-booked cursor-default`;
       }
       return `${baseClass} seat seat-available cursor-default opacity-50`;
     }
 
-    if (booking) {
+    if (isBooked) {
       return `${baseClass} seat seat-booked cursor-pointer`;
     }
 
-    if (seat.type === 'folding') {
+    if (isFolding && !isBooked) {
       return `${baseClass} seat seat-folding hover:bg-muted-foreground/50`;
     }
 
@@ -62,7 +65,7 @@ export function SeatMap({
   };
 
   const handleSeatClick = (seat: Seat) => {
-    if (readOnly || seat.type === 'driver') return;
+    if (readOnly || seat.isDriver) return;
     onSeatClick?.(seat);
   };
 
@@ -87,6 +90,9 @@ export function SeatMap({
               }
 
               const booking = getSeatBooking(seat.id);
+              const isBooked = !!booking;
+              const isDriver = seat.isDriver;
+              const isFolding = seat.isFolding;
 
               const seatButton = (
                 <button
@@ -94,18 +100,18 @@ export function SeatMap({
                   type="button"
                   className={getSeatClass(seat, booking)}
                   onClick={() => handleSeatClick(seat)}
-                  disabled={readOnly || seat.type === 'driver'}
+                  disabled={readOnly || isDriver}
                   title={
-                    seat.type === 'driver'
+                    isDriver
                       ? 'Driver'
                       : booking
-                      ? `Booked`
-                      : seat.id
+                      ? 'Booked'
+                      : String(seat.id)
                   }
                 >
-                  {seat.type === 'driver' ? (
+                  {isDriver ? (
                     <User className="w-4 h-4" />
-                  ) : seat.type === 'folding' && !booking ? (
+                  ) : isFolding && !isBooked ? (
                     'F'
                   ) : (
                     seat.id

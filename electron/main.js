@@ -1,14 +1,9 @@
-// import { app, BrowserWindow } from "electron"
-// import path from "path"
-// import isDev from "electron-is-dev"
+const { app, BrowserWindow, dialog, ipcMain } = require("electron");
+const path = require("path");
+const isDev = require("electron-is-dev");
+const printService = require("../services/printer.js");
 
 const createWindow = async () => {
-  const { BrowserWindow, ipcMain, dialog } = await import("electron");
-  const path = await import("path");
-  const isDev = await import("electron-is-dev");
-
-  console.log(process.versions);
-
   const mainWindow = new BrowserWindow({
     width: 1366,
     height: 768,
@@ -17,15 +12,15 @@ const createWindow = async () => {
     },
   });
 
-  ipcMain.handle("dialog:openDirectory", async () => {
-    const { canceled, filePaths } = await dialog.showOpenDialog(mainWindow, {
-      properties: ["openDirectory"],
-    });
-    if (canceled) {
-      return;
-    } else {
-      return filePaths[0];
-    }
+  ipcMain.handle("print-receipt", async () => {
+    printService.printTicket();
+  });
+
+  ipcMain.handle("get-printers", async () => {
+    const printers = await mainWindow.webContents.getPrintersAsync(); // Use async version for modern APIs
+    // In older versions you can use the sync version:
+    // const printers = mainWindow.webContents.getPrinters();
+    return printers;
   });
 
   if (isDev) {
@@ -40,14 +35,13 @@ const createWindow = async () => {
 };
 
 (async () => {
-  let { app } = await import("electron");
-
-  app.whenReady().then(() => {
+  app.whenReady().then(async () => {
     createWindow();
     app.on("activate", function () {
       if (BrowserWindow.getAllWindows().length === 0) createWindow();
     });
   });
+
   app.on("window-all-closed", function () {
     if (process.platform !== "darwin") app.quit();
   });

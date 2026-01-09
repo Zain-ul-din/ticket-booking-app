@@ -6,7 +6,7 @@ import { VoucherCard } from '../components/VoucherCard';
 import { CreateVoucherDialog } from '../components/CreateVoucherDialog';
 import { useBooking } from '../contexts/BookingContext';
 import { Plus, ArrowLeft, FileText } from 'lucide-react';
-import { formatDate } from '../utils/dateUtils';
+import { formatDateFull } from '../utils/dateUtils';
 
 export default function VouchersPage() {
   const router = useRouter();
@@ -80,7 +80,7 @@ export default function VouchersPage() {
             {sortedDates.map((date) => (
               <div key={date}>
                 <h2 className="text-lg font-semibold text-muted-foreground mb-4">
-                  {formatDate(new Date(date))}
+                  {formatDateFull(new Date(date))}
                 </h2>
                 <div className="grid gap-4">
                   {groupedVouchers[date].map((voucher) => (

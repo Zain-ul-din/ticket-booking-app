@@ -1,10 +1,10 @@
 import Link from 'next/link';
 import { useBooking } from '../contexts/BookingContext';
-import { Bus, FileText, Ticket, ChevronRight } from 'lucide-react';
+import { Bus, FileText, Ticket, ChevronRight, Route } from 'lucide-react';
 import { formatDate } from '../utils/dateUtils';
 
 export default function Home() {
-  const { vehicles, vouchers, getVehicleById } = useBooking();
+  const { vehicles, vouchers, routes, getVehicleById } = useBooking();
 
   // Get today's vouchers
   const today = new Date().toISOString().split('T')[0];
@@ -35,16 +35,20 @@ export default function Home() {
 
       <main className="container max-w-4xl mx-auto px-4 py-8">
         {/* Quick Stats */}
-        <div className="grid grid-cols-3 gap-4 mb-8">
-          <div className="stat-card">
+        <div className="grid grid-cols-4 gap-4 mb-8">
+          <div className="section-card text-center">
             <div className="text-3xl font-bold text-primary">{vehicles.length}</div>
             <div className="text-sm text-muted-foreground">Vehicles</div>
           </div>
-          <div className="stat-card">
-            <div className="text-3xl font-bold text-primary">{todayVouchers.length}</div>
-            <div className="text-sm text-muted-foreground">Today&apos;s Trips</div>
+          <div className="section-card text-center">
+            <div className="text-3xl font-bold text-primary">{routes.length}</div>
+            <div className="text-sm text-muted-foreground">Routes</div>
           </div>
-          <div className="stat-card">
+          <div className="section-card text-center">
+            <div className="text-3xl font-bold text-primary">{todayVouchers.length}</div>
+            <div className="text-sm text-muted-foreground">Today's Trips</div>
+          </div>
+          <div className="section-card text-center">
             <div className="text-3xl font-bold text-primary">{totalBookingsToday}</div>
             <div className="text-sm text-muted-foreground">Bookings Today</div>
           </div>
@@ -57,8 +61,19 @@ export default function Home() {
               <Bus className="w-8 h-8 text-primary" />
             </div>
             <div className="text-center">
-              <h2 className="text-xl font-semibold">Manage Vehicles</h2>
-              <p className="text-sm text-muted-foreground">Add and view your fleet</p>
+              <h2 className="text-xl font-semibold">Vehicles</h2>
+              <p className="text-sm text-muted-foreground">Manage fleet</p>
+            </div>
+            <ChevronRight className="w-5 h-5 text-muted-foreground" />
+          </Link>
+
+          <Link href="/routes" className="nav-button">
+            <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center">
+              <Route className="w-8 h-8 text-primary" />
+            </div>
+            <div className="text-center">
+              <h2 className="text-xl font-semibold">Routes & Fares</h2>
+              <p className="text-sm text-muted-foreground">Set prices</p>
             </div>
             <ChevronRight className="w-5 h-5 text-muted-foreground" />
           </Link>
@@ -68,8 +83,8 @@ export default function Home() {
               <FileText className="w-8 h-8 text-primary" />
             </div>
             <div className="text-center">
-              <h2 className="text-xl font-semibold">Daily Vouchers</h2>
-              <p className="text-sm text-muted-foreground">Create trips &amp; book seats</p>
+              <h2 className="text-xl font-semibold">Vouchers</h2>
+              <p className="text-sm text-muted-foreground">Create trips</p>
             </div>
             <ChevronRight className="w-5 h-5 text-muted-foreground" />
           </Link>
@@ -79,7 +94,7 @@ export default function Home() {
         {todayVouchers.length > 0 && (
           <div className="section-card">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold">Today&apos;s Trips</h2>
+              <h2 className="text-lg font-semibold">Today's Trips</h2>
               <span className="text-sm text-muted-foreground">
                 {formatDate(new Date())}
               </span>
@@ -94,15 +109,15 @@ export default function Home() {
                   <Link
                     key={voucher.id}
                     href={`/booking/${voucher.id}`}
-                    className="trip-card"
+                    className="flex items-center gap-4 p-4 rounded-xl bg-muted/30 hover:bg-muted/50 transition-colors"
                   >
                     <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
                       <Ticket className="w-6 h-6 text-primary" />
                     </div>
                     <div className="flex-1">
-                      <div className="font-medium">{voucher.destination}</div>
+                      <div className="font-medium">From: {voucher.origin}</div>
                       <div className="text-sm text-muted-foreground">
-                        {voucher.departureTime} &bull; {vehicle?.name}
+                        {voucher.departureTime} • {vehicle?.name}
                       </div>
                     </div>
                     <div className="text-right">
@@ -131,26 +146,7 @@ export default function Home() {
               href="/vouchers"
               className="text-primary font-medium hover:underline"
             >
-              Go to Vouchers &rarr;
-            </Link>
-          </div>
-        )}
-
-        {/* Empty State for New Users */}
-        {vouchers.length === 0 && (
-          <div className="section-card text-center py-8">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center">
-              <Ticket className="w-8 h-8 text-muted-foreground" />
-            </div>
-            <h3 className="font-semibold mb-1">Welcome to Booking Manager</h3>
-            <p className="text-sm text-muted-foreground mb-4">
-              Start by creating your first trip voucher
-            </p>
-            <Link
-              href="/vouchers"
-              className="text-primary font-medium hover:underline"
-            >
-              Create Your First Voucher &rarr;
+              Go to Vouchers →
             </Link>
           </div>
         )}

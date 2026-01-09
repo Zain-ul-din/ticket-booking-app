@@ -4,22 +4,12 @@ import { Button } from '../components/ui/button';
 import { VehicleCard } from '../components/VehicleCard';
 import { AddVehicleDialog } from '../components/AddVehicleDialog';
 import { useBooking } from '../contexts/BookingContext';
-import { Plus, ArrowLeft, Bus } from 'lucide-react';
+import { Plus, ArrowLeft } from 'lucide-react';
 
 export default function VehiclesPage() {
   const { vehicles, addVehicle, removeVehicle } = useBooking();
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [expandedVehicle, setExpandedVehicle] = useState<string | null>(null);
-
-  const handleAddVehicle = (vehicleData: {
-    name: string;
-    registrationNumber: string;
-    type: 'highroof' | 'bus';
-    seats: any[];
-    totalSeats: number;
-  }) => {
-    addVehicle(vehicleData);
-  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -44,7 +34,7 @@ export default function VehiclesPage() {
         {vehicles.length === 0 ? (
           <div className="text-center py-16">
             <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-muted flex items-center justify-center">
-              <Bus className="w-10 h-10 text-muted-foreground" />
+              <Plus className="w-8 h-8 text-muted-foreground" />
             </div>
             <h2 className="text-xl font-semibold mb-2">No Vehicles Yet</h2>
             <p className="text-muted-foreground mb-6">Add your first vehicle to get started</p>
@@ -73,7 +63,7 @@ export default function VehiclesPage() {
       <AddVehicleDialog
         open={showAddDialog}
         onClose={() => setShowAddDialog(false)}
-        onAdd={handleAddVehicle}
+        onAdd={addVehicle}
       />
     </div>
   );

@@ -39,9 +39,7 @@ export function VehicleCard({ vehicle, onDelete, onClick, showSeats = false }: V
               className="text-muted-foreground hover:text-destructive"
               onClick={(e) => {
                 e.stopPropagation();
-                if (confirm(`Are you sure you want to delete ${vehicle.name}?`)) {
-                  onDelete();
-                }
+                onDelete();
               }}
             >
               <Trash2 className="w-4 h-4" />

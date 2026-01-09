@@ -1,69 +1,72 @@
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from './ui/alert-dialog';
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from './ui/dialog';
+import { Button } from './ui/button';
 import { BookedSeat } from '../types/booking';
+import { Pencil, Trash2 } from 'lucide-react';
 
 interface CancelBookingDialogProps {
   open: boolean;
   onClose: () => void;
   booking: BookedSeat | null;
-  onConfirm: () => void;
+  onCancel: () => void;
+  onEdit: () => void;
 }
 
 export function CancelBookingDialog({
   open,
   onClose,
   booking,
-  onConfirm,
+  onCancel,
+  onEdit,
 }: CancelBookingDialogProps) {
   if (!booking) return null;
 
   const genderEmoji = booking.passenger.gender === 'male' ? '👨' : '👩';
 
   return (
-    <AlertDialog open={open} onOpenChange={onClose}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>Cancel Seat Booking?</AlertDialogTitle>
-          <AlertDialogDescription>
-            Are you sure you want to cancel the booking for seat {booking.seatId}?
-          </AlertDialogDescription>
-        </AlertDialogHeader>
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Seat #{booking.seatId} - Booked</DialogTitle>
+          <DialogDescription>
+            What would you like to do with this booking?
+          </DialogDescription>
+        </DialogHeader>
 
-        <div className="my-4 p-4 rounded-lg bg-muted">
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <span className="text-2xl">{genderEmoji}</span>
-              <div>
-                <p className="font-semibold">{booking.passenger.name}</p>
-                <p className="text-sm text-muted-foreground">
-                  {booking.passenger.cnic}
-                </p>
-              </div>
-            </div>
-          </div>
+        <div className="bg-muted p-4 rounded-lg space-y-1">
+          <p className="font-medium text-foreground">{booking.passenger.name}</p>
+          <p className="text-sm font-mono text-muted-foreground">{booking.passenger.cnic}</p>
+          <p className="text-sm capitalize text-muted-foreground">{booking.passenger.gender}</p>
         </div>
 
-        <AlertDialogFooter>
-          <AlertDialogCancel onClick={onClose}>Keep Booking</AlertDialogCancel>
-          <AlertDialogAction
-            onClick={() => {
-              onConfirm();
-              onClose();
-            }}
-            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+        <DialogFooter className="flex-col sm:flex-row gap-2">
+          <Button variant="outline" onClick={onClose} className="h-12 flex-1">
+            Close
+          </Button>
+          <Button
+            variant="outline"
+            onClick={onEdit}
+            className="h-12 flex-1 gap-2"
           >
-            Yes, Cancel Booking
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+            <Pencil className="w-4 h-4" />
+            Edit Details
+          </Button>
+          <Button
+            variant="destructive"
+            onClick={onCancel}
+            className="h-12 flex-1 gap-2"
+          >
+            <Trash2 className="w-4 h-4" />
+            Cancel Booking
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

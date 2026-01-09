@@ -41,7 +41,7 @@ export function AddVehicleDialog({ open, onClose, onAdd }: AddVehicleDialogProps
       : generateBusLayout(rows, cols);
 
     const totalSeats = type === 'highroof'
-      ? HIGHROOF_LAYOUT.filter(s => s.type !== 'driver').length
+      ? HIGHROOF_LAYOUT.filter(s => !s.isDriver).length
       : rows * cols;
 
     onAdd({
@@ -112,7 +112,7 @@ export function AddVehicleDialog({ open, onClose, onAdd }: AddVehicleDialogProps
                   <Car className="w-8 h-8" />
                   <div className="text-center">
                     <span className="font-medium block">High Roof</span>
-                    <span className="text-xs text-muted-foreground">11 seats</span>
+                    <span className="text-xs text-muted-foreground">18 seats</span>
                   </div>
                 </Label>
               </div>

@@ -17,7 +17,7 @@ import {
   SelectValue,
 } from './ui/select';
 import { useBooking } from '../contexts/BookingContext';
-import { Calendar, Clock, MapPin, Phone, User, DollarSign, Bus } from 'lucide-react';
+import { Calendar, Clock, MapPin, Phone, User, Bus } from 'lucide-react';
 
 interface CreateVoucherDialogProps {
   open: boolean;
@@ -25,27 +25,28 @@ interface CreateVoucherDialogProps {
 }
 
 export function CreateVoucherDialog({ open, onClose }: CreateVoucherDialogProps) {
-  const { vehicles, addVoucher } = useBooking();
+  const { vehicles, routes, addVoucher } = useBooking();
   const [vehicleId, setVehicleId] = useState('');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
-  const [fare, setFare] = useState('');
   const [departureTime, setDepartureTime] = useState('');
   const [driverName, setDriverName] = useState('');
   const [driverMobile, setDriverMobile] = useState('');
-  const [destination, setDestination] = useState('');
+  const [origin, setOrigin] = useState('');
+
+  // Get unique origins from routes
+  const uniqueOrigins = [...new Set(routes.map(r => r.origin))];
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!vehicleId || !fare || !departureTime || !driverName || !driverMobile || !destination) return;
+    if (!vehicleId || !departureTime || !driverName || !driverMobile || !origin) return;
 
     addVoucher({
       vehicleId,
       date,
-      fare: parseFloat(fare),
+      origin: origin.trim(),
       departureTime,
       driverName: driverName.trim(),
       driverMobile: driverMobile.trim(),
-      destination: destination.trim(),
       bookedSeats: [],
     });
 
@@ -56,11 +57,10 @@ export function CreateVoucherDialog({ open, onClose }: CreateVoucherDialogProps)
   const resetForm = () => {
     setVehicleId('');
     setDate(new Date().toISOString().split('T')[0]);
-    setFare('');
     setDepartureTime('');
     setDriverName('');
     setDriverMobile('');
-    setDestination('');
+    setOrigin('');
   };
 
   const formatPhoneNumber = (value: string) => {
@@ -127,36 +127,26 @@ export function CreateVoucherDialog({ open, onClose }: CreateVoucherDialogProps)
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="destination" className="flex items-center gap-2">
-                <MapPin className="w-4 h-4 text-muted-foreground" />
-                Destination
-              </Label>
-              <Input
-                id="destination"
-                placeholder="e.g., Vehari"
-                value={destination}
-                onChange={(e) => setDestination(e.target.value)}
-                className="h-12"
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="fare" className="flex items-center gap-2">
-                <DollarSign className="w-4 h-4 text-muted-foreground" />
-                Fare (Rs.)
-              </Label>
-              <Input
-                id="fare"
-                type="number"
-                placeholder="e.g., 1500"
-                value={fare}
-                onChange={(e) => setFare(e.target.value)}
-                className="h-12"
-                required
-              />
-            </div>
+          <div className="space-y-2">
+            <Label htmlFor="origin" className="flex items-center gap-2">
+              <MapPin className="w-4 h-4 text-muted-foreground" />
+              Starting Point (Origin)
+            </Label>
+            <Select value={origin} onValueChange={setOrigin} required>
+              <SelectTrigger className="h-12">
+                <SelectValue placeholder="Select starting city" />
+              </SelectTrigger>
+              <SelectContent>
+                {uniqueOrigins.map((o) => (
+                  <SelectItem key={o} value={o}>
+                    {o}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">
+              Passengers will select their destination when booking
+            </p>
           </div>
 
           <div className="p-4 bg-muted/30 rounded-xl space-y-4">
