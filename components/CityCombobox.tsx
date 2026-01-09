@@ -17,7 +17,6 @@ import {
 } from './ui/popover';
 
 // List of major cities in Pakistan
-// Structure: { value: lowercase for cmdk matching, label: proper case for display }
 const CITIES = [
   { value: 'abbottabad', label: 'Abbottabad' },
   { value: 'bahawalnagar', label: 'Bahawalnagar' },
@@ -77,7 +76,7 @@ interface CityComboboxProps {
   placeholder?: string;
   className?: string;
   required?: boolean;
-  excludeCities?: string[];  // Cities to exclude from the list (proper case)
+  excludeCities?: string[];
   disabled?: boolean;
 }
 
@@ -92,11 +91,13 @@ export function CityCombobox({
 }: CityComboboxProps) {
   const [open, setOpen] = useState(false);
 
-  // Filter out excluded cities (excludeCities comes in proper case, so compare against labels)
-  const availableCities = CITIES.filter(city => !excludeCities.includes(city.label));
+  // Convert value to lowercase for internal comparison
+  const internalValue = value.toLowerCase();
 
-  // Get the current city object for display
-  const selectedCity = CITIES.find(city => city.label === value);
+  // Filter out excluded cities
+  const availableCities = CITIES.filter(
+    city => !excludeCities.map(c => c.toLowerCase()).includes(city.value)
+  );
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -113,46 +114,43 @@ export function CityCombobox({
             className
           )}
         >
-          {selectedCity ? selectedCity.label : placeholder}
+          {value
+            ? CITIES.find((city) => city.value === internalValue)?.label
+            : placeholder}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+      <PopoverContent className="w-[--radix-popover-trigger-width] p-0 z-[100]">
         <Command>
-          <CommandInput placeholder="Search city..." />
-          <CommandEmpty>No city found.</CommandEmpty>
+          <CommandInput placeholder="Search city..." className="h-9" />
           <CommandList>
+            <CommandEmpty>No city found.</CommandEmpty>
             <CommandGroup>
-              {availableCities.map((city) => {
-                // Check if this city is currently selected
-                // Compare using lowercase values since cmdk works with lowercase
-                const isSelected = selectedCity?.value === city.value;
-
-                return (
-                  <CommandItem
-                    key={city.value}
-                    value={city.value}  // lowercase for cmdk matching
-                    onSelect={(currentValue) => {
-                      // currentValue is lowercased by cmdk
-                      // Find the city object to get the proper case label
-                      const clickedCity = CITIES.find(c => c.value === currentValue);
-                      if (clickedCity) {
-                        // Toggle: if already selected, clear; otherwise set to proper case label
-                        onValueChange(isSelected ? '' : clickedCity.label);
-                      }
-                      setOpen(false);
-                    }}
-                  >
-                    <Check
-                      className={cn(
-                        'mr-2 h-4 w-4',
-                        isSelected ? 'opacity-100' : 'opacity-0'
-                      )}
-                    />
-                    {city.label}
-                  </CommandItem>
-                );
-              })}
+              {availableCities.map((city) => (
+                <CommandItem
+                  key={city.value}
+                  value={city.value}
+                  onSelect={(currentValue) => {
+                    // Find the proper case label
+                    const selected = CITIES.find(c => c.value === currentValue);
+                    onValueChange(currentValue === internalValue ? "" : (selected?.label || ""));
+                    setOpen(false);
+                  }}
+                  onClick={() => {
+                    // Fallback onClick handler
+                    onValueChange(city.value === internalValue ? "" : city.label);
+                    setOpen(false);
+                  }}
+                >
+                  {city.label}
+                  <Check
+                    className={cn(
+                      "ml-auto h-4 w-4",
+                      internalValue === city.value ? "opacity-100" : "opacity-0"
+                    )}
+                  />
+                </CommandItem>
+              ))}
             </CommandGroup>
           </CommandList>
         </Command>
