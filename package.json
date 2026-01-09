@@ -10,7 +10,33 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test:print": "node ./test/print.js"
+    "test:print": "node ./test/print.js",
+    "dist": "electron-builder"
+  },
+  "build": {
+    "npmRebuild": false,
+    "appId": "com.mycompany.googlephotosviewer",
+    "productName": "Google Photos Viewer",
+    "directories": {
+      "buildResources": "assets",
+      "output": "dist"
+    },
+    "files": [
+      "out/**/*",
+      "electron/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        "nsis",
+        "zip"
+      ],
+      "icon": "assets/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
   },
   "dependencies": {
     "@heroicons/react": "^2.0.13",
@@ -50,6 +76,7 @@
   "devDependencies": {
     "concurrently": "^7.6.0",
     "electron": "^22.0.0",
+    "electron-builder": "^26.4.0",
     "prisma": "^4.8.1",
     "tailwindcss-animate": "^1.0.7"
   }

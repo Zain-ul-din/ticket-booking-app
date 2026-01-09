@@ -1,14 +1,14 @@
-import Link from 'next/link';
-import { useBooking } from '../contexts/BookingContext';
-import { Bus, FileText, Ticket, ChevronRight, Route } from 'lucide-react';
-import { formatDate } from '../utils/dateUtils';
+import Link from "next/link";
+import { useBooking } from "../contexts/BookingContext";
+import { Bus, FileText, Ticket, ChevronRight, Route } from "lucide-react";
+import { formatDate } from "../utils/dateUtils";
 
 export default function Home() {
   const { vehicles, vouchers, routes, getVehicleById } = useBooking();
 
   // Get today's vouchers
-  const today = new Date().toISOString().split('T')[0];
-  const todayVouchers = vouchers.filter(v => v.date === today);
+  const today = new Date().toISOString().split("T")[0];
+  const todayVouchers = vouchers.filter((v) => v.date === today);
 
   // Get total bookings for today
   const totalBookingsToday = todayVouchers.reduce(
@@ -27,7 +27,9 @@ export default function Home() {
             </div>
             <div>
               <h1 className="text-3xl font-bold">Booking Manager</h1>
-              <p className="text-muted-foreground">Manage your vehicles and seat bookings</p>
+              <p className="text-muted-foreground">
+                Manage your vehicles and seat bookings
+              </p>
             </div>
           </div>
         </div>
@@ -37,19 +39,29 @@ export default function Home() {
         {/* Quick Stats */}
         <div className="grid grid-cols-4 gap-4 mb-8">
           <div className="section-card text-center">
-            <div className="text-3xl font-bold text-primary">{vehicles.length}</div>
+            <div className="text-3xl font-bold text-primary">
+              {vehicles.length}
+            </div>
             <div className="text-sm text-muted-foreground">Vehicles</div>
           </div>
           <div className="section-card text-center">
-            <div className="text-3xl font-bold text-primary">{routes.length}</div>
+            <div className="text-3xl font-bold text-primary">
+              {routes.length}
+            </div>
             <div className="text-sm text-muted-foreground">Routes</div>
           </div>
           <div className="section-card text-center">
-            <div className="text-3xl font-bold text-primary">{todayVouchers.length}</div>
-            <div className="text-sm text-muted-foreground">Today's Trips</div>
+            <div className="text-3xl font-bold text-primary">
+              {todayVouchers.length}
+            </div>
+            <div className="text-sm text-muted-foreground">
+              {`Today's`} Trips
+            </div>
           </div>
           <div className="section-card text-center">
-            <div className="text-3xl font-bold text-primary">{totalBookingsToday}</div>
+            <div className="text-3xl font-bold text-primary">
+              {totalBookingsToday}
+            </div>
             <div className="text-sm text-muted-foreground">Bookings Today</div>
           </div>
         </div>
@@ -94,7 +106,7 @@ export default function Home() {
         {todayVouchers.length > 0 && (
           <div className="section-card">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold">Today's Trips</h2>
+              <h2 className="text-lg font-semibold">{`Today's`} Trips</h2>
               <span className="text-sm text-muted-foreground">
                 {formatDate(new Date())}
               </span>
@@ -121,7 +133,9 @@ export default function Home() {
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="font-semibold text-primary">{bookedCount}/{totalSeats}</div>
+                      <div className="font-semibold text-primary">
+                        {bookedCount}/{totalSeats}
+                      </div>
                       <div className="text-xs text-muted-foreground">seats</div>
                     </div>
                     <ChevronRight className="w-5 h-5 text-muted-foreground" />

@@ -41,13 +41,16 @@ export interface Passenger {
 }
 
 /**
- * Represents a route with origin, destination, and fare
+ * Represents a route with origin, destination, vehicle type, and fare
+ * Origin is fixed from terminal setup
+ * Fare varies by destination AND vehicle type
  */
 export interface Route {
   id: string;                    // Unique identifier
-  origin: string;                // Starting city
+  origin: string;                // Starting city (from terminal)
   destination: string;           // Destination city
-  fare: number;                  // Price in Rs.
+  vehicleType: VehicleType;      // Type of vehicle ('highroof' or 'bus')
+  fare: number;                  // Price in Rs. for this destination + vehicle type
 }
 
 /**

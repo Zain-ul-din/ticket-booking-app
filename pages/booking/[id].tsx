@@ -19,7 +19,11 @@ export default function BookingPage() {
 
   const voucher = id ? getVoucherById(id as string) : null;
   const vehicle = voucher ? getVehicleById(voucher.vehicleId) : null;
-  const availableRoutes = voucher ? getRoutesByOrigin(voucher.origin) : [];
+
+  // Filter routes by origin AND vehicle type
+  const availableRoutes = voucher && vehicle
+    ? getRoutesByOrigin(voucher.origin).filter(route => route.vehicleType === vehicle.type)
+    : [];
 
   const [selectedSeat, setSelectedSeat] = useState<Seat | null>(null);
   const [showBookingDialog, setShowBookingDialog] = useState(false);

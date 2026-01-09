@@ -69,12 +69,18 @@ const DEFAULT_VEHICLES: Vehicle[] = [
 
 /**
  * Default routes for initial state
+ * Each route has origin, destination, vehicle type, and fare
+ * Fare varies by destination AND vehicle type
  */
 const DEFAULT_ROUTES: Route[] = [
-  { id: 'route-1', origin: 'Multan', destination: 'Lahore', fare: 1500 },
-  { id: 'route-2', origin: 'Multan', destination: 'Faisalabad', fare: 1200 },
-  { id: 'route-3', origin: 'Multan', destination: 'Islamabad', fare: 2500 },
-  { id: 'route-4', origin: 'Lahore', destination: 'Islamabad', fare: 1800 },
+  // Multan routes - Highroof
+  { id: 'route-1', origin: 'Multan', destination: 'Lahore', vehicleType: 'highroof', fare: 1500 },
+  { id: 'route-2', origin: 'Multan', destination: 'Faisalabad', vehicleType: 'highroof', fare: 1200 },
+  { id: 'route-3', origin: 'Multan', destination: 'Islamabad', vehicleType: 'highroof', fare: 2500 },
+  // Multan routes - Bus
+  { id: 'route-4', origin: 'Multan', destination: 'Lahore', vehicleType: 'bus', fare: 1800 },
+  { id: 'route-5', origin: 'Multan', destination: 'Faisalabad', vehicleType: 'bus', fare: 1500 },
+  { id: 'route-6', origin: 'Multan', destination: 'Islamabad', vehicleType: 'bus', fare: 3000 },
 ];
 
 /**

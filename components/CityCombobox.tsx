@@ -76,6 +76,8 @@ interface CityComboboxProps {
   placeholder?: string;
   className?: string;
   required?: boolean;
+  excludeCities?: string[];  // Cities to exclude from the list
+  disabled?: boolean;
 }
 
 export function CityCombobox({
@@ -84,8 +86,13 @@ export function CityCombobox({
   placeholder = 'Select city',
   className,
   required,
+  excludeCities = [],
+  disabled = false,
 }: CityComboboxProps) {
   const [open, setOpen] = useState(false);
+
+  // Filter out excluded cities
+  const availableCities = CITIES.filter(city => !excludeCities.includes(city));
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -95,6 +102,7 @@ export function CityCombobox({
           role="combobox"
           aria-expanded={open}
           aria-required={required}
+          disabled={disabled}
           className={cn(
             'flex h-12 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
             !value && 'text-muted-foreground',
@@ -111,12 +119,12 @@ export function CityCombobox({
           <CommandEmpty>No city found.</CommandEmpty>
           <CommandList>
             <CommandGroup>
-              {CITIES.map((city) => (
+              {availableCities.map((city) => (
                 <CommandItem
                   key={city}
                   value={city}
-                  onSelect={(currentValue) => {
-                    onValueChange(currentValue === value ? '' : currentValue);
+                  onSelect={() => {
+                    onValueChange(value === city ? '' : city);
                     setOpen(false);
                   }}
                 >

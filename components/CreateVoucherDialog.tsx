@@ -17,6 +17,7 @@ import {
   SelectValue,
 } from './ui/select';
 import { useBooking } from '../contexts/BookingContext';
+import { useTerminal } from '../contexts/TerminalContext';
 import { Calendar, Clock, MapPin, Phone, User, Bus } from 'lucide-react';
 
 interface CreateVoucherDialogProps {
@@ -25,16 +26,16 @@ interface CreateVoucherDialogProps {
 }
 
 export function CreateVoucherDialog({ open, onClose }: CreateVoucherDialogProps) {
-  const { vehicles, routes, addVoucher } = useBooking();
+  const { vehicles, addVoucher } = useBooking();
+  const { terminalInfo } = useTerminal();
   const [vehicleId, setVehicleId] = useState('');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [departureTime, setDepartureTime] = useState('');
   const [driverName, setDriverName] = useState('');
   const [driverMobile, setDriverMobile] = useState('');
-  const [origin, setOrigin] = useState('');
 
-  // Get unique origins from routes
-  const uniqueOrigins = [...new Set(routes.map(r => r.origin))];
+  // Get origin from terminal
+  const origin = terminalInfo?.city || '';
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,7 +44,7 @@ export function CreateVoucherDialog({ open, onClose }: CreateVoucherDialogProps)
     addVoucher({
       vehicleId,
       date,
-      origin: origin.trim(),
+      origin,
       departureTime,
       driverName: driverName.trim(),
       driverMobile: driverMobile.trim(),
@@ -60,7 +61,6 @@ export function CreateVoucherDialog({ open, onClose }: CreateVoucherDialogProps)
     setDepartureTime('');
     setDriverName('');
     setDriverMobile('');
-    setOrigin('');
   };
 
   const formatPhoneNumber = (value: string) => {
@@ -128,25 +128,23 @@ export function CreateVoucherDialog({ open, onClose }: CreateVoucherDialogProps)
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="origin" className="flex items-center gap-2">
+            <Label className="flex items-center gap-2">
               <MapPin className="w-4 h-4 text-muted-foreground" />
-              Starting Point (Origin)
+              Starting Point (Your Terminal)
             </Label>
-            <Select value={origin} onValueChange={setOrigin} required>
-              <SelectTrigger className="h-12">
-                <SelectValue placeholder="Select starting city" />
-              </SelectTrigger>
-              <SelectContent>
-                {uniqueOrigins.map((o) => (
-                  <SelectItem key={o} value={o}>
-                    {o}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <p className="text-xs text-muted-foreground">
-              Passengers will select their destination when booking
-            </p>
+            <div className="h-12 px-3 py-2 rounded-md border border-input bg-muted/30 flex items-center">
+              <span className="font-medium text-foreground">{origin || 'Not set'}</span>
+            </div>
+            {!origin && (
+              <p className="text-xs text-destructive">
+                Please complete terminal setup first
+              </p>
+            )}
+            {origin && (
+              <p className="text-xs text-muted-foreground">
+                Passengers will select their destination when booking
+              </p>
+            )}
           </div>
 
           <div className="p-4 bg-muted/30 rounded-xl space-y-4">
@@ -188,7 +186,7 @@ export function CreateVoucherDialog({ open, onClose }: CreateVoucherDialogProps)
             <Button type="button" variant="outline" onClick={onClose}>
               Cancel
             </Button>
-            <Button type="submit" className="px-8">
+            <Button type="submit" className="px-8" disabled={!origin}>
               Create Voucher
             </Button>
           </DialogFooter>
