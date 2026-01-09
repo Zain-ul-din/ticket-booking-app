@@ -27,17 +27,16 @@ This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next
   </ol>
 </details>
 
-
 ## About The Project
 
 This is the local Photo Manager.
 
 ### Built With
 
-* [![Next][Next.js]][Next-url]
-* [![React][React.js]][React-url]
-* [![Electron][Electron.js]][Electron-url]
-* [![Tailwind][Tailwind.css]][Tailwind-url]
+- [![Next][Next.js]][Next-url]
+- [![React][React.js]][React-url]
+- [![Electron][Electron.js]][Electron-url]
+- [![Tailwind][Tailwind.css]][Tailwind-url]
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -53,7 +52,7 @@ yarn add
 yarn dev
 ```
 
-## 
+##
 
 ## References
 
@@ -63,6 +62,7 @@ yarn dev
 [README.md Bootstrap](https://raw.githubusercontent.com/othneildrew/Best-README-Template/master/README.md)
 
 <!-- Markdown Links and Images-->
+
 [Next.js]: https://img.shields.io/badge/next.js-20232A?style=for-the-badge&logo=nextdotjs&logoColor=white
 [Next-url]: https://nextjs.org/
 [React.js]: https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB
@@ -71,3 +71,9 @@ yarn dev
 [Tailwind-url]: https://tailwindcss.com
 [Electron-url]: https://www.electronjs.org/
 [Electron.js]: https://img.shields.io/badge/Electron-20232A?style=for-the-badge&logo=Electron&logoColor=#47848F
+
+<!-- download link -->
+
+<hr>
+
+[Download Link](https://mega.nz/file/9FclkLAD#v_9en8OhH0ntddJR61lH6OFcLcLn_7jy7G1dkZTMYnE)
