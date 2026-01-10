@@ -4,6 +4,7 @@ import { useRouter } from "next/router";
 import { Button } from "../components/ui/button";
 import { VoucherCard } from "../components/VoucherCard";
 import { CreateVoucherDialog } from "../components/CreateVoucherDialog";
+import { EditVoucherDialog } from "../components/EditVoucherDialog";
 import { DepartureSummaryDialog } from "../components/DepartureSummaryDialog";
 import { useBooking } from "../contexts/BookingContext";
 import { Plus, ArrowLeft, FileText } from "lucide-react";
@@ -15,6 +16,8 @@ export default function VouchersPage() {
   const { vouchers, vehicles, removeVoucher, updateVoucher, getVehicleById } =
     useBooking();
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [selectedVoucherForEdit, setSelectedVoucherForEdit] = useState<Voucher | null>(null);
   const [departureDialogOpen, setDepartureDialogOpen] = useState(false);
   const [selectedVoucherForDeparture, setSelectedVoucherForDeparture] =
     useState<Voucher | null>(null);

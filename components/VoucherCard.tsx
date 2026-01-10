@@ -4,7 +4,7 @@ import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { VoucherStateBadge } from './VoucherStateBadge';
 import { VoucherStateActions } from './VoucherStateActions';
-import { Bus, Car, Clock, MapPin, Phone, User, Trash2, ChevronRight } from 'lucide-react';
+import { Bus, Car, Clock, MapPin, Phone, User, Trash2, Edit2, ChevronRight } from 'lucide-react';
 import { formatDate } from '../utils/dateUtils';
 import { getVoucherStatus } from '../utils/voucherUtils';
 import { cn } from '../lib/utils';
@@ -12,13 +12,14 @@ import { cn } from '../lib/utils';
 interface VoucherCardProps {
   voucher: Voucher;
   vehicle: Vehicle | undefined;
+  onEdit?: () => void;
   onDelete?: () => void;
   onClick?: () => void;
   onMarkDeparted?: () => void;
   onMarkClosed?: () => void;
 }
 
-export function VoucherCard({ voucher, vehicle, onDelete, onClick, onMarkDeparted, onMarkClosed }: VoucherCardProps) {
+export function VoucherCard({ voucher, vehicle, onEdit, onDelete, onClick, onMarkDeparted, onMarkClosed }: VoucherCardProps) {
   const bookedCount = voucher.bookedSeats.length;
   const totalSeats = vehicle?.totalSeats || 0;
   const Icon = vehicle?.type === 'bus' ? Bus : Car;
@@ -59,6 +60,19 @@ export function VoucherCard({ voucher, vehicle, onDelete, onClick, onMarkDeparte
                 onMarkClosed={onMarkClosed}
                 variant="compact"
               />
+            )}
+            {onEdit && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-muted-foreground hover:text-primary"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEdit();
+                }}
+              >
+                <Edit2 className="w-4 h-4" />
+              </Button>
             )}
             {onDelete && (
               <Button

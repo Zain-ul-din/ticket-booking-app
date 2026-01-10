@@ -53,7 +53,7 @@ function divider() {
 function printTicket(data) {
   return new Promise((resolve, reject) => {
     if (!data) {
-      return reject(new Error('No ticket data provided'));
+      return reject(new Error("No ticket data provided"));
     }
 
     const ticket = data;
@@ -74,85 +74,86 @@ function printTicket(data) {
         }
 
         try {
-    // ========== PRINT 1: MAIN PASSENGER TICKET ==========
-    line();
-    printer.size(0, 0);
-    printer.style("B");
-    printer.text(ticket.company);
-    printer.style("NORMAL");
-    line();
+          // ========== PRINT 1: MAIN PASSENGER TICKET ==========
+          line();
+          printer.size(0, 0);
+          printer.style("B");
+          printer.text("Mian Travels");
+          printer.style("NORMAL");
+          printer.text(ticket.company);
+          line();
 
-    printer.text("");
-    printer.size(0, 0);
-    printer.style("B");
-    printer.text(`${ticket.route.from}  ->  ${ticket.route.to}`);
-    printer.text("");
+          printer.text("");
+          printer.size(0, 0);
+          printer.style("B");
+          printer.text(`${ticket.route.from}  ->  ${ticket.route.to}`);
+          printer.text("");
 
-    printer.size(1, 1);
-    printer.text("Veh NO: " + ticket.vehicleNumber);
+          printer.size(1, 1);
+          printer.text("Veh NO: " + ticket.vehicleNumber);
 
-    const seats = ticket.seats;
-    for (let i = 0; i < seats.length; i += 4) {
-      printer.text(
-        `${i == 0 ? "Seat NO: " : ""}` + seats.slice(i, i + 4).join(",")
-      );
-    }
-    printer.style("NORMAL");
+          const seats = ticket.seats;
+          for (let i = 0; i < seats.length; i += 4) {
+            printer.text(
+              `${i == 0 ? "Seat NO: " : ""}` + seats.slice(i, i + 4).join(",")
+            );
+          }
+          printer.style("NORMAL");
 
-    printer.size(0, 0);
-    printer.text("");
-    printer.text(`${ticket.departure}`);
+          printer.size(0, 0);
+          printer.text("");
+          printer.text(`${ticket.departure}`);
 
-    line();
-    printer.size(0, 0);
-    printer.align("CT");
-    printer.style("B");
-    printer.text(lineLR("Passenger Information", ""));
-    printer.style("normal");
+          line();
+          printer.size(0, 0);
+          printer.align("CT");
+          printer.style("B");
+          printer.text(lineLR("Passenger Information", ""));
+          printer.style("normal");
 
-    // Only print passenger fields if they exist
-    if (ticket.passenger.name) {
-      printer.text(lineLR("Name:", ticket.passenger.name));
-    }
-    if (ticket.passenger.phone) {
-      printer.text(lineLR("Phone No:", ticket.passenger.phone));
-    }
-    if (ticket.passenger.cnic) {
-      printer.text(lineLR("CNIC No:", ticket.passenger.cnic));
-    }
-    if (ticket.passenger.gender) {
-      printer.text(lineLR("Gender:", ticket.passenger.gender));
-    }
-    line();
+          // Only print passenger fields if they exist
+          if (ticket.passenger.name) {
+            printer.text(lineLR("Name:", ticket.passenger.name));
+          }
+          if (ticket.passenger.phone) {
+            printer.text(lineLR("Phone No:", ticket.passenger.phone));
+          }
+          if (ticket.passenger.cnic) {
+            printer.text(lineLR("CNIC No:", ticket.passenger.cnic));
+          }
+          if (ticket.passenger.gender) {
+            printer.text(lineLR("Gender:", ticket.passenger.gender));
+          }
+          line();
 
-    printer.text(lineLR("Fare:", ticket.fare.price));
-    printer.text(lineLR("Discount:", ticket.fare.discount));
-    printer.text(lineLR("Quantity:", ticket.seats.length + " X"));
-    printer.style("b");
-    printer.text(lineLR("Total Payable:", ticket.fare.total));
-    printer.style("normal");
+          printer.text(lineLR("Fare:", ticket.fare.price));
+          printer.text(lineLR("Discount:", ticket.fare.discount));
+          printer.text(lineLR("Quantity:", ticket.seats.length + " X"));
+          printer.style("b");
+          printer.text(lineLR("Total Payable:", ticket.fare.total));
+          printer.style("normal");
 
-    // note
+          // note
 
-    // ---------- NOTES ----------
-    printer.text("");
-    printer.size(0, 0);
-    printer.align("CT");
-    printer.style("NORMAL");
+          // ---------- NOTES ----------
+          printer.text("");
+          printer.size(0, 0);
+          printer.align("CT");
+          printer.style("NORMAL");
 
-    const noteText =
-      "Note: Passengers are responsible for their own luggage. The company is not liable for any loss or damage.";
+          const noteText =
+            "Note: Passengers are responsible for their own luggage. The company is not liable for any loss or damage.";
 
-    wrapText(noteText).forEach((line) => {
-      printer.text(lineLR(line, ""));
-    });
+          wrapText(noteText).forEach((line) => {
+            printer.text(lineLR(line, ""));
+          });
 
-    // Number
-    printer.text("");
-    if (ticket.terminalPhone) {
-      printer.text(lineLR("", `Helpline: ${ticket.terminalPhone}`));
-    }
-    printer.style("NORMAL");
+          // Number
+          printer.text("");
+          if (ticket.terminalPhone) {
+            printer.text(lineLR("", `Booking No: ${ticket.terminalPhone}`));
+          }
+          printer.style("NORMAL");
 
           // // Feed & cut for main ticket
           printer.feed(2);
@@ -202,7 +203,7 @@ function printTicket(data) {
 function printVoucher(data) {
   return new Promise((resolve, reject) => {
     if (!data) {
-      return reject(new Error('No voucher data provided'));
+      return reject(new Error("No voucher data provided"));
     }
 
     const voucher = data;
@@ -226,8 +227,9 @@ function printVoucher(data) {
           line();
           printer.size(0, 0);
           printer.style("B");
-          printer.text(voucher.company);
+          printer.text("Mian Travels");
           printer.style("NORMAL");
+          printer.text(ticket.company);
           line();
 
           printer.text("");
@@ -257,7 +259,9 @@ function printVoucher(data) {
           });
 
           line();
-          printer.text(lineLR("Total Bookings:", `${voucher.totalSeats} seats`));
+          printer.text(
+            lineLR("Total Bookings:", `${voucher.totalSeats} seats`)
+          );
           line();
 
           // Financial summary

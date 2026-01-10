@@ -1,5 +1,6 @@
 export const cities = [
   { id: 1, city_name: "Lahore", label: "Lahore (لاہور)", short_code: "LHE" },
+
   {
     id: 2,
     city_name: "Rawalpindi / Islamabad",
@@ -356,6 +357,18 @@ export const cities = [
   { id: 97, city_name: "Burewala", label: "Burewala", short_code: "BRW" },
   { id: 99, city_name: "Dunyapur", label: "Dunyapur", short_code: "DNY" },
   { id: 101, city_name: "Jampur", label: "Jampur", short_code: "JAM" },
+  {
+    id: 202,
+    city_name: "Zafar Chowk",
+    label: "Zafar Chowk",
+    short_code: "ZFC",
+  },
+  {
+    id: 203,
+    city_name: "Mamukanjan",
+    label: "Mamukanjan  (ماموں کانجن)",
+    short_code: "Mamu",
+  },
 ];
 
 const citiesWithTerminal = [
