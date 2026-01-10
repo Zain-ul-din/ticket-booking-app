@@ -2,7 +2,7 @@ import { BookingTicket, Vehicle } from '../types/booking';
 import { Card, CardContent } from './ui/card';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
-import { User, MapPin, Edit2, Trash2 } from 'lucide-react';
+import { User, MapPin, Edit2, Trash2, Printer } from 'lucide-react';
 import { cn } from '../lib/utils';
 
 interface TicketCardProps {
@@ -10,11 +10,12 @@ interface TicketCardProps {
   vehicle: Vehicle;
   onEdit: () => void;
   onCancel: () => void;
+  onPrint: () => void;
   canEdit: boolean;
 }
 
-export function TicketCard({ ticket, vehicle, onEdit, onCancel, canEdit }: TicketCardProps) {
-  const genderIcon = ticket.passenger.gender === 'male' ? '👨' : '👩';
+export function TicketCard({ ticket, vehicle, onEdit, onCancel, onPrint, canEdit }: TicketCardProps) {
+  const genderIcon = ticket.passenger.gender === 'male' ? '👨' : ticket.passenger.gender === 'female' ? '👩' : '👤';
   const seatDisplay = ticket.seatIds.length === 1
     ? `Seat ${ticket.seatIds[0]}`
     : `Seats ${ticket.seatIds.join(', ')}`;
@@ -28,15 +29,17 @@ export function TicketCard({ ticket, vehicle, onEdit, onCancel, canEdit }: Ticke
             <div className="flex items-center gap-2">
               <div className="text-2xl">{genderIcon}</div>
               <div>
-                <h3 className="font-semibold text-lg">{ticket.passenger.name}</h3>
-                <p className="text-sm text-muted-foreground font-mono">
-                  {ticket.passenger.cnic}
-                </p>
+                <h3 className="font-semibold text-lg">{ticket.passenger.name || 'Anonymous'}</h3>
+                {ticket.passenger.cnic && (
+                  <p className="text-sm text-muted-foreground font-mono">
+                    {ticket.passenger.cnic}
+                  </p>
+                )}
               </div>
             </div>
 
-            {canEdit && (
-              <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2">
+              {canEdit && (
                 <Button
                   variant="ghost"
                   size="sm"
@@ -49,6 +52,23 @@ export function TicketCard({ ticket, vehicle, onEdit, onCancel, canEdit }: Ticke
                   <Edit2 className="w-3 h-3" />
                   Edit
                 </Button>
+              )}
+
+              {/* Print button is ALWAYS visible */}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onPrint();
+                }}
+                className="gap-1 text-blue-600 hover:text-blue-700"
+              >
+                <Printer className="w-3 h-3" />
+                Print
+              </Button>
+
+              {canEdit && (
                 <Button
                   variant="ghost"
                   size="sm"
@@ -61,8 +81,8 @@ export function TicketCard({ ticket, vehicle, onEdit, onCancel, canEdit }: Ticke
                   <Trash2 className="w-3 h-3" />
                   Cancel
                 </Button>
-              </div>
-            )}
+              )}
+            </div>
           </div>
 
           {/* Seats & Destination */}
@@ -87,7 +107,7 @@ export function TicketCard({ ticket, vehicle, onEdit, onCancel, canEdit }: Ticke
             </div>
             <div className="flex justify-between text-sm text-green-600">
               <span>Discount:</span>
-              <span className="font-medium">- Rs. {ticket.totalDiscount.toLocaleString()}</span>
+              <span className="font-medium">Rs. {ticket.totalDiscount.toLocaleString()}</span>
             </div>
             <div className="flex justify-between font-bold text-base pt-1.5 border-t">
               <span>Final Total:</span>

@@ -13,8 +13,24 @@ const createWindow = async () => {
     },
   });
 
-  ipcMain.handle("print-receipt", async () => {
-    printService.printTicket();
+  ipcMain.handle("print-receipt", async (event, ticketData) => {
+    try {
+      await printService.printTicket(ticketData);
+      return { success: true };
+    } catch (error) {
+      console.error("Print error:", error);
+      return { success: false, error: error.message };
+    }
+  });
+
+  ipcMain.handle("print-voucher", async (event, voucherData) => {
+    try {
+      await printService.printVoucher(voucherData);
+      return { success: true };
+    } catch (error) {
+      console.error("Print voucher error:", error);
+      return { success: false, error: error.message };
+    }
   });
 
   ipcMain.handle("get-printers", async () => {

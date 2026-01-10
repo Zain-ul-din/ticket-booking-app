@@ -12,8 +12,11 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Badge } from './ui/badge';
 import { Alert, AlertDescription } from './ui/alert';
-import { DollarSign, Package, AlertCircle } from 'lucide-react';
+import { DollarSign, Package, AlertCircle, Printer } from 'lucide-react';
 import { calculateVoucherFinancialSummary, validateFinancialInput } from '../utils/voucherUtils';
+import { printVoucherSummary } from '../utils/printVoucher';
+import { useTerminal } from '../contexts/TerminalContext';
+import { toast } from '../utils/toast';
 
 interface DepartureSummaryDialogProps {
   open: boolean;
@@ -30,6 +33,7 @@ export function DepartureSummaryDialog({
   vehicle,
   onConfirm,
 }: DepartureSummaryDialogProps) {
+  const { terminalInfo } = useTerminal();
   const [terminalTax, setTerminalTax] = useState('0');
   const [cargo, setCargo] = useState('0');
   const [error, setError] = useState('');
@@ -59,6 +63,18 @@ export function DepartureSummaryDialog({
     onClose();
   };
 
+  const handlePrint = async () => {
+    if (!terminalInfo) {
+      toast.error('Terminal info not configured');
+      return;
+    }
+    if (!vehicle) {
+      toast.error('Vehicle information not available');
+      return;
+    }
+    await printVoucherSummary(voucher, vehicle, summary, terminalInfo.name);
+  };
+
   const hasBookings = voucher.bookedSeats.length > 0;
   const totalSeats = vehicle ? vehicle.totalSeats : 0;
 
@@ -75,6 +91,7 @@ export function DepartureSummaryDialog({
             <div>
               <p className="text-sm text-muted-foreground">Vehicle</p>
               <p className="font-semibold">{vehicle?.name || 'Unknown'}</p>
+              <p className="text-sm text-muted-foreground font-mono">{vehicle?.registrationNumber}</p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Bookings</p>
@@ -220,6 +237,15 @@ export function DepartureSummaryDialog({
         <DialogFooter className="gap-2 sm:gap-0">
           <Button type="button" variant="outline" onClick={handleClose} className="h-12">
             Cancel
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handlePrint}
+            className="h-12 gap-2"
+          >
+            <Printer className="w-4 h-4" />
+            Print Summary
           </Button>
           <Button
             type="button"

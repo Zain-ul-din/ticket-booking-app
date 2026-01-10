@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -10,7 +10,7 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { RadioGroup, RadioGroupItem } from './ui/radio-group';
-import { VehicleType, HIGHROOF_LAYOUT, generateBusLayout } from '../types/booking';
+import { Vehicle, VehicleType, HIGHROOF_LAYOUT, generateBusLayout } from '../types/booking';
 import { Bus, Car } from 'lucide-react';
 
 interface AddVehicleDialogProps {
@@ -23,34 +23,67 @@ interface AddVehicleDialogProps {
     seats: any[];
     totalSeats: number;
   }) => void;
+  vehicle?: Vehicle | null;
+  onUpdate?: (vehicleId: string, updates: {
+    name: string;
+    registrationNumber: string;
+  }) => void;
 }
 
-export function AddVehicleDialog({ open, onClose, onAdd }: AddVehicleDialogProps) {
+export function AddVehicleDialog({ open, onClose, onAdd, vehicle, onUpdate }: AddVehicleDialogProps) {
   const [name, setName] = useState('');
   const [regNumber, setRegNumber] = useState('');
   const [type, setType] = useState<VehicleType>('highroof');
   const [rows, setRows] = useState(12);
   const [cols, setCols] = useState(4);
 
+  const isEditMode = !!vehicle;
+
+  // Populate form when editing
+  useEffect(() => {
+    if (vehicle) {
+      setName(vehicle.name);
+      setRegNumber(vehicle.registrationNumber);
+      setType(vehicle.type);
+      // Note: Can't change vehicle type or seat layout in edit mode
+    } else {
+      // Reset form when adding new vehicle
+      setName('');
+      setRegNumber('');
+      setType('highroof');
+      setRows(12);
+      setCols(4);
+    }
+  }, [vehicle, open]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !regNumber.trim()) return;
 
-    const seats = type === 'highroof'
-      ? HIGHROOF_LAYOUT
-      : generateBusLayout(rows, cols);
+    if (isEditMode && vehicle && onUpdate) {
+      // Edit mode - only update name and registration number
+      onUpdate(vehicle.id, {
+        name: name.trim(),
+        registrationNumber: regNumber.trim().toUpperCase(),
+      });
+    } else {
+      // Add mode - create new vehicle with seats
+      const seats = type === 'highroof'
+        ? HIGHROOF_LAYOUT
+        : generateBusLayout(rows, cols);
 
-    const totalSeats = type === 'highroof'
-      ? HIGHROOF_LAYOUT.filter(s => !s.isDriver).length
-      : rows * cols;
+      const totalSeats = type === 'highroof'
+        ? HIGHROOF_LAYOUT.filter(s => !s.isDriver).length
+        : rows * cols;
 
-    onAdd({
-      name: name.trim(),
-      registrationNumber: regNumber.trim().toUpperCase(),
-      type,
-      seats,
-      totalSeats,
-    });
+      onAdd({
+        name: name.trim(),
+        registrationNumber: regNumber.trim().toUpperCase(),
+        type,
+        seats,
+        totalSeats,
+      });
+    }
 
     setName('');
     setRegNumber('');
@@ -64,7 +97,9 @@ export function AddVehicleDialog({ open, onClose, onAdd }: AddVehicleDialogProps
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle className="text-xl">Add New Vehicle</DialogTitle>
+          <DialogTitle className="text-xl">
+            {isEditMode ? 'Edit Vehicle' : 'Add New Vehicle'}
+          </DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-5">
@@ -98,6 +133,7 @@ export function AddVehicleDialog({ open, onClose, onAdd }: AddVehicleDialogProps
               value={type}
               onValueChange={(v) => setType(v as VehicleType)}
               className="grid grid-cols-2 gap-4"
+              disabled={isEditMode}
             >
               <div>
                 <RadioGroupItem
@@ -173,7 +209,7 @@ export function AddVehicleDialog({ open, onClose, onAdd }: AddVehicleDialogProps
               Cancel
             </Button>
             <Button type="submit" className="px-8">
-              Add Vehicle
+              {isEditMode ? 'Save Changes' : 'Add Vehicle'}
             </Button>
           </DialogFooter>
         </form>

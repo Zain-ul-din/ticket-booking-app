@@ -1,12 +1,13 @@
 import { Vehicle } from "../types/booking";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
-import { Bus, Car, Trash2, Users } from "lucide-react";
+import { Bus, Car, Trash2, Users, Edit2 } from "lucide-react";
 import { SeatMap } from "./SeatMap";
 
 interface VehicleCardProps {
   vehicle: Vehicle;
   onDelete?: () => void;
+  onEdit?: () => void;
   onClick?: () => void;
   showSeats?: boolean;
 }
@@ -14,6 +15,7 @@ interface VehicleCardProps {
 export function VehicleCard({
   vehicle,
   onDelete,
+  onEdit,
   onClick,
   showSeats = false,
 }: VehicleCardProps) {
@@ -39,19 +41,34 @@ export function VehicleCard({
               </p>
             </div>
           </div>
-          {onDelete && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="text-muted-foreground hover:text-destructive"
-              onClick={(e) => {
-                e.stopPropagation();
-                onDelete();
-              }}
-            >
-              <Trash2 className="w-4 h-4" />
-            </Button>
-          )}
+          <div className="flex gap-1">
+            {onEdit && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-muted-foreground hover:text-primary"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEdit();
+                }}
+              >
+                <Edit2 className="w-4 h-4" />
+              </Button>
+            )}
+            {onDelete && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-muted-foreground hover:text-destructive"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDelete();
+                }}
+              >
+                <Trash2 className="w-4 h-4" />
+              </Button>
+            )}
+          </div>
         </div>
       </CardHeader>
       <CardContent>

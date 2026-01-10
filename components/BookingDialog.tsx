@@ -20,14 +20,19 @@ import {
   SelectValue,
 } from "./ui/select";
 import { Seat, Route, BookedSeat } from "../types/booking";
-import { User, CreditCard, Users, MapPin, Percent } from "lucide-react";
+import { User, CreditCard, Users, MapPin, Percent, Phone } from "lucide-react";
 
 interface BookingDialogProps {
   open: boolean;
   onClose: () => void;
   seat: Seat | null;
   onBook: (ticketData: {
-    passenger: { name: string; cnic: string; gender: 'male' | 'female' };
+    passenger: {
+      name?: string;
+      cnic?: string;
+      phone?: string;
+      gender: "male" | "female";
+    };
     destination: string;
     baseFarePerSeat: number;
     totalDiscount: number;
@@ -52,6 +57,7 @@ export function BookingDialog({
 }: BookingDialogProps) {
   const [name, setName] = useState("");
   const [cnic, setCnic] = useState("");
+  const [phone, setPhone] = useState("");
   const [gender, setGender] = useState<"male" | "female">("male");
   const [selectedRouteId, setSelectedRouteId] = useState("");
   const [discount, setDiscount] = useState("0");
@@ -66,9 +72,10 @@ export function BookingDialog({
   // Populate fields when editing or reset when opening
   useEffect(() => {
     if (editMode && existingBooking) {
-      setName(existingBooking.passenger.name);
-      setCnic(existingBooking.passenger.cnic);
-      setGender(existingBooking.passenger.gender);
+      setName(existingBooking.passenger.name || "");
+      setCnic(existingBooking.passenger.cnic || "");
+      setPhone(existingBooking.passenger.phone || "");
+      setGender(existingBooking.passenger.gender || "male");
       setDiscount(existingBooking.discount.toString());
       // Find route by destination
       const route = availableRoutes.find(
@@ -80,6 +87,7 @@ export function BookingDialog({
     } else if (!editMode && open) {
       setName("");
       setCnic("");
+      setPhone("");
       setGender("male");
       setSelectedRouteId("");
       setDiscount("0");
@@ -88,10 +96,23 @@ export function BookingDialog({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || !cnic.trim() || !selectedRoute) return;
+
+    // Validate CNIC format only if provided
+    if (cnic.trim() && !cnic.match(/^\d{5}-\d{7}-\d$/)) {
+      alert('CNIC must be in format: XXXXX-XXXXXXX-X');
+      return;
+    }
+
+    // Must select a route
+    if (!selectedRoute) return;
 
     onBook({
-      passenger: { name: name.trim(), cnic: cnic.trim(), gender },
+      passenger: {
+        name: name.trim() || undefined,
+        cnic: cnic.trim() || undefined,
+        phone: phone.trim() || undefined,
+        gender,
+      },
       destination: selectedRoute.destination,
       baseFarePerSeat: selectedRoute.fare,
       totalDiscount,
@@ -99,6 +120,7 @@ export function BookingDialog({
 
     setName("");
     setCnic("");
+    setPhone("");
     setGender("male");
     setSelectedRouteId("");
     setDiscount("0");
@@ -209,32 +231,50 @@ export function BookingDialog({
                 </Label>
                 <Input
                   id="name"
-                  placeholder="Enter full name"
+                  placeholder="Enter full name (optional)"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className="h-12 text-lg"
-                  required
                 />
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label
-                htmlFor="cnic"
-                className="flex items-center gap-2 text-base"
-              >
-                <CreditCard className="w-4 h-4 text-muted-foreground" />
-                CNIC Number
-              </Label>
-              <Input
-                id="cnic"
-                placeholder="XXXXX-XXXXXXX-X"
-                value={cnic}
-                onChange={(e) => setCnic(formatCnic(e.target.value))}
-                className="h-12 text-lg font-mono"
-                maxLength={15}
-                required
-              />
+            <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-2">
+                <Label
+                  htmlFor="cnic"
+                  className="flex items-center gap-2 text-base"
+                >
+                  <CreditCard className="w-4 h-4 text-muted-foreground" />
+                  CNIC Number
+                </Label>
+                <Input
+                  id="cnic"
+                  placeholder="XXXXX-XXXXXXX-X (optional)"
+                  value={cnic}
+                  onChange={(e) => setCnic(formatCnic(e.target.value))}
+                  className="h-12 text-lg font-mono"
+                  maxLength={15}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label
+                  htmlFor="phone"
+                  className="flex items-center gap-2 text-base"
+                >
+                  <Phone className="w-4 h-4 text-muted-foreground" />
+                  Phone Number
+                </Label>
+                <Input
+                  id="phone"
+                  type="tel"
+                  placeholder="03XX-XXXXXXX (optional)"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  className="h-12 text-lg"
+                />
+              </div>
             </div>
 
             <div className="space-y-3">
@@ -286,7 +326,9 @@ export function BookingDialog({
                     <span className="text-muted-foreground">
                       {seatCount} seats × Rs. {baseFarePerSeat.toLocaleString()}
                     </span>
-                    <span className="font-medium">Rs. {totalBaseFare.toLocaleString()}</span>
+                    <span className="font-medium">
+                      Rs. {totalBaseFare.toLocaleString()}
+                    </span>
                   </div>
                 )}
                 {selectedSeats.length <= 1 && (
@@ -298,7 +340,7 @@ export function BookingDialog({
                 {totalDiscount > 0 && (
                   <div className="flex justify-between text-sm text-green-600">
                     <span>Total Discount:</span>
-                    <span>- Rs. {totalDiscount.toLocaleString()}</span>
+                    <span>Rs. {totalDiscount.toLocaleString()}</span>
                   </div>
                 )}
                 <div className="flex justify-between font-bold text-lg pt-2 border-t">
@@ -330,7 +372,8 @@ export function BookingDialog({
                 max={totalBaseFare}
               />
               <p className="text-xs text-muted-foreground">
-                Applies to total fare{selectedSeats.length > 1 ? ' for all seats' : ''}
+                Applies to total fare
+                {selectedSeats.length > 1 ? " for all seats" : ""}
               </p>
             </div>
 

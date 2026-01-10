@@ -14,8 +14,11 @@ import { VoucherStateBadge } from "../../components/VoucherStateBadge";
 import { VoucherStateActions } from "../../components/VoucherStateActions";
 import { DepartureSummaryDialog } from "../../components/DepartureSummaryDialog";
 import { useBooking } from "../../contexts/BookingContext";
+import { useTerminal } from "../../contexts/TerminalContext";
 import { getVoucherStatus, canEditVoucher } from "../../utils/voucherUtils";
 import { deriveBookedSeatsFromTickets, findTicketBySeatId } from "../../utils/ticketUtils";
+import { printTicket } from "../../utils/printTicket";
+import { toast } from "../../utils/toast";
 import { Seat, BookingTicket } from "../../types/booking";
 import {
   ArrowLeft,
@@ -40,6 +43,7 @@ export default function BookingPage() {
     routes,
     getRoutesByOrigin,
   } = useBooking();
+  const { terminalInfo } = useTerminal();
 
   const voucher = id ? getVoucherById(id as string) : null;
   const vehicle = voucher ? getVehicleById(voucher.vehicleId) : null;
@@ -124,8 +128,8 @@ export default function BookingPage() {
     setSelectedSeats([]);
   };
 
-  const handleBookSeat = (ticketData: {
-    passenger: { name: string; cnic: string; gender: 'male' | 'female' };
+  const handleBookSeat = async (ticketData: {
+    passenger: { name?: string; cnic?: string; phone?: string; gender: 'male' | 'female' };
     destination: string;
     baseFarePerSeat: number;
     totalDiscount: number;
@@ -154,6 +158,11 @@ export default function BookingPage() {
       tickets: updatedTickets,
       bookedSeats: updatedBookedSeats
     });
+
+    // Auto-print the newly created ticket
+    if (terminalInfo) {
+      await printTicket(newTicket, vehicle, voucher, terminalInfo.name, terminalInfo.contactNumber);
+    }
 
     setShowBookingDialog(false);
     setSelectedSeat(null);
@@ -202,6 +211,14 @@ export default function BookingPage() {
 
     setShowTicketEditDialog(false);
     setSelectedTicket(null);
+  };
+
+  const handlePrintTicket = async (ticket: BookingTicket) => {
+    if (!terminalInfo) {
+      toast.error('Terminal info not configured');
+      return;
+    }
+    await printTicket(ticket, vehicle, voucher, terminalInfo.name, terminalInfo.contactNumber);
   };
 
   const handleMarkDeparted = () => {
@@ -369,7 +386,7 @@ export default function BookingPage() {
                   <div className="space-y-3 max-h-96 overflow-y-auto">
                     {voucher.bookedSeats.map((booking) => {
                       const genderEmoji =
-                        booking.passenger.gender === "male" ? "👨" : "👩";
+                        booking.passenger.gender === "male" ? "👨" : booking.passenger.gender === "female" ? "👩" : "👤";
                       return (
                         <div
                           key={booking.seatId}
@@ -381,11 +398,13 @@ export default function BookingPage() {
                             </div>
                             <div className="flex-1 min-w-0">
                               <p className="font-medium truncate">
-                                {booking.passenger.name}
+                                {booking.passenger.name || 'Anonymous'}
                               </p>
-                              <p className="text-xs text-muted-foreground font-mono">
-                                {booking.passenger.cnic}
-                              </p>
+                              {booking.passenger.cnic && (
+                                <p className="text-xs text-muted-foreground font-mono">
+                                  {booking.passenger.cnic}
+                                </p>
+                              )}
                             </div>
                             <span className="text-xl">{genderEmoji}</span>
                           </div>
@@ -448,6 +467,7 @@ export default function BookingPage() {
               vehicle={vehicle}
               onEditTicket={handleEditTicket}
               onCancelTicket={handleCancelTicket}
+              onPrintTicket={handlePrintTicket}
               canEdit={canEdit}
             />
           </div>

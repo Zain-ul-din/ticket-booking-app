@@ -1,11 +1,16 @@
+import { useState } from "react";
 import Link from "next/link";
 import { useBooking } from "../contexts/BookingContext";
-import { Bus, FileText, Ticket, ChevronRight, Route, Home } from "lucide-react";
+import { useTerminal } from "../contexts/TerminalContext";
+import { Bus, FileText, Ticket, ChevronRight, Route, Home, Building2, Edit2 } from "lucide-react";
 import { formatDate } from "../utils/dateUtils";
 import { Button } from "@/components/ui/button";
+import { EditTerminalDialog } from "../components/EditTerminalDialog";
 
 export default function Admin() {
   const { vehicles, vouchers, routes, getVehicleById } = useBooking();
+  const { terminalInfo, setTerminalInfo } = useTerminal();
+  const [showEditTerminal, setShowEditTerminal] = useState(false);
 
   // Get today's vouchers
   const today = new Date().toISOString().split("T")[0];
@@ -72,6 +77,47 @@ export default function Admin() {
             <div className="text-sm text-muted-foreground">Bookings Today</div>
           </div>
         </div>
+
+        {/* Terminal Information */}
+        {terminalInfo && (
+          <div className="section-card mb-8">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                  <Building2 className="w-5 h-5 text-primary" />
+                </div>
+                <h2 className="text-lg font-semibold">Terminal Information</h2>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowEditTerminal(true)}
+                className="gap-2"
+              >
+                <Edit2 className="w-4 h-4" />
+                Edit
+              </Button>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm text-muted-foreground">Terminal Name</p>
+                <p className="font-medium">{terminalInfo.name}</p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">City</p>
+                <p className="font-medium">{terminalInfo.city}</p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Area</p>
+                <p className="font-medium">{terminalInfo.area}</p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Contact</p>
+                <p className="font-medium">{terminalInfo.contactNumber}</p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Main Navigation */}
         <div className="grid gap-4 md:grid-cols-2 mb-8">
@@ -172,6 +218,14 @@ export default function Admin() {
           </div>
         )}
       </main>
+
+      {/* Edit Terminal Dialog */}
+      <EditTerminalDialog
+        open={showEditTerminal}
+        onClose={() => setShowEditTerminal(false)}
+        terminalInfo={terminalInfo}
+        onSave={setTerminalInfo}
+      />
     </div>
   );
 }

@@ -33,6 +33,7 @@ interface BookingState {
 interface BookingContextType extends BookingState {
   // Vehicle operations
   addVehicle: (vehicle: Omit<Vehicle, "id">) => string;
+  updateVehicle: (vehicleId: string, updates: Partial<Vehicle>) => void;
   removeVehicle: (vehicleId: string) => void;
   getVehicleById: (vehicleId: string) => Vehicle | undefined;
 
@@ -261,6 +262,15 @@ export function BookingProvider({ children }: BookingProviderProps) {
     return id;
   };
 
+  const updateVehicle = (vehicleId: string, updates: Partial<Vehicle>): void => {
+    setState((prev) => ({
+      ...prev,
+      vehicles: prev.vehicles.map((v) =>
+        v.id === vehicleId ? { ...v, ...updates } : v
+      ),
+    }));
+  };
+
   const removeVehicle = (vehicleId: string): void => {
     setState((prev) => ({
       ...prev,
@@ -380,6 +390,7 @@ export function BookingProvider({ children }: BookingProviderProps) {
     vouchers: state.vouchers,
     routes: state.routes,
     addVehicle,
+    updateVehicle,
     removeVehicle,
     getVehicleById,
     addVoucher,

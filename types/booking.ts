@@ -33,11 +33,13 @@ export interface Vehicle {
 
 /**
  * Represents passenger information
+ * All fields are optional, but if provided must be valid
  */
 export interface Passenger {
-  name: string;                  // Full name
-  cnic: string;                  // CNIC number (formatted: XXXXX-XXXXXXX-X)
-  gender: 'male' | 'female';     // Gender
+  name?: string;                  // Full name (optional)
+  cnic?: string;                  // CNIC number (formatted: XXXXX-XXXXXXX-X, optional)
+  phone?: string;                 // Phone number (optional)
+  gender?: 'male' | 'female';     // Gender (optional)
 }
 
 /**

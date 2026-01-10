@@ -3,6 +3,7 @@ const { contextBridge, ipcRenderer } = require("electron");
 (() => {
   contextBridge.exposeInMainWorld("customAPI", {
     getPrinters: () => ipcRenderer.invoke("get-printers"),
-    printReceipt: () => ipcRenderer.invoke("print-receipt"),
+    printReceipt: (ticketData) => ipcRenderer.invoke("print-receipt", ticketData),
+    printVoucher: (voucherData) => ipcRenderer.invoke("print-voucher", voucherData),
   });
 })();

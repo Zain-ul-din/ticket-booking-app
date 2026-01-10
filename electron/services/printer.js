@@ -49,19 +49,32 @@ function divider() {
 }
 
 // ---------- TICKET PRINT FUNCTION ----------
-function printTicket(data = null) {
-  const ticket = data;
+// Prints TWO receipts: Main passenger ticket + Small stub for driver assistant
+function printTicket(data) {
+  return new Promise((resolve, reject) => {
+    if (!data) {
+      return reject(new Error('No ticket data provided'));
+    }
 
-  const device = new escpos.USB(); // auto-detect printer
-  const printer = new escpos.Printer(device);
+    const ticket = data;
 
-  const line = () => {
-    printer.size(0, 0);
-    printer.align("CT");
-    printer.text("".padEnd(42, "-"));
-  };
+    try {
+      const device = new escpos.USB(); // auto-detect printer
+      const printer = new escpos.Printer(device);
 
-  device.open(() => {
+      const line = () => {
+        printer.size(0, 0);
+        printer.align("CT");
+        printer.text("".padEnd(42, "-"));
+      };
+
+      device.open((error) => {
+        if (error) {
+          return reject(new Error(`Failed to open printer: ${error.message}`));
+        }
+
+        try {
+    // ========== PRINT 1: MAIN PASSENGER TICKET ==========
     line();
     printer.size(0, 0);
     printer.style("B");
@@ -96,10 +109,20 @@ function printTicket(data = null) {
     printer.style("B");
     printer.text(lineLR("Passenger Information", ""));
     printer.style("normal");
-    printer.text(lineLR("Name:", ticket.passenger.name));
-    printer.text(lineLR("Phone No:", ticket.passenger.phone));
-    printer.text(lineLR("CNIC No:", ticket.passenger.cnic));
-    printer.text(lineLR("Gender:", ticket.passenger.gender));
+
+    // Only print passenger fields if they exist
+    if (ticket.passenger.name) {
+      printer.text(lineLR("Name:", ticket.passenger.name));
+    }
+    if (ticket.passenger.phone) {
+      printer.text(lineLR("Phone No:", ticket.passenger.phone));
+    }
+    if (ticket.passenger.cnic) {
+      printer.text(lineLR("CNIC No:", ticket.passenger.cnic));
+    }
+    if (ticket.passenger.gender) {
+      printer.text(lineLR("Gender:", ticket.passenger.gender));
+    }
     line();
 
     printer.text(lineLR("Fare:", ticket.fare.price));
@@ -126,17 +149,151 @@ function printTicket(data = null) {
 
     // Number
     printer.text("");
-    printer.text(lineLR("Booking: 0301-1234567", "Helpline: 042-12345678"));
+    if (ticket.terminalPhone) {
+      printer.text(lineLR("", `Helpline: ${ticket.terminalPhone}`));
+    }
     printer.style("NORMAL");
 
-    // // Feed & cut
-    printer.feed(4);
-    printer.cut("partial");
-    printer.close();
+          // // Feed & cut for main ticket
+          printer.feed(2);
+          printer.cut("partial");
+
+          // ========== PRINT 2: SMALL STUB FOR DRIVER ASSISTANT ==========
+          printer.feed(1);
+          printer.size(0, 0);
+          printer.align("CT");
+          printer.style("NORMAL");
+
+          // Vehicle and seats
+          printer.text("Veh: " + ticket.vehicleNumber);
+          for (let i = 0; i < ticket.seats.length; i += 6) {
+            printer.text("Seat: " + ticket.seats.slice(i, i + 6).join(","));
+          }
+          printer.text("");
+
+          // Route
+          printer.text(ticket.route.from + " -> " + ticket.route.to);
+          printer.text("");
+
+          // Date time
+          printer.text(ticket.departure);
+          printer.text("");
+
+          // Total
+          printer.text("Total: " + ticket.fare.total);
+          printer.text("");
+
+          // Feed & cut for stub
+          printer.feed(3);
+          printer.cut("partial");
+          printer.close();
+          resolve();
+        } catch (printError) {
+          reject(new Error(`Print operation failed: ${printError.message}`));
+        }
+      });
+    } catch (error) {
+      reject(new Error(`Printer initialization failed: ${error.message}`));
+    }
+  });
+}
+
+// ---------- VOUCHER PRINT FUNCTION ----------
+function printVoucher(data) {
+  return new Promise((resolve, reject) => {
+    if (!data) {
+      return reject(new Error('No voucher data provided'));
+    }
+
+    const voucher = data;
+
+    try {
+      const device = new escpos.USB();
+      const printer = new escpos.Printer(device);
+
+      const line = () => {
+        printer.size(0, 0);
+        printer.align("CT");
+        printer.text("".padEnd(42, "-"));
+      };
+
+      device.open((error) => {
+        if (error) {
+          return reject(new Error(`Failed to open printer: ${error.message}`));
+        }
+
+        try {
+          line();
+          printer.size(0, 0);
+          printer.style("B");
+          printer.text(voucher.company);
+          printer.style("NORMAL");
+          line();
+
+          printer.text("");
+          printer.size(0, 0);
+          printer.text(`From: ${voucher.route.from}`);
+          printer.size(1, 1);
+          printer.text(`Veh: ${voucher.vehicleNumber}`);
+          printer.size(0, 0);
+          printer.text("");
+          printer.text(`${voucher.departure}`);
+          printer.text("");
+
+          // Driver info
+          printer.text(`Driver: ${voucher.driver.name}`);
+          printer.text(`Mobile: ${voucher.driver.mobile}`);
+
+          line();
+          printer.style("B");
+          printer.text("REVENUE BREAKDOWN");
+          printer.style("NORMAL");
+          line();
+
+          // Revenue table
+          voucher.revenueByDestination.forEach((item) => {
+            printer.text(lineLR(item.destination, `${item.tickets} tkt`));
+            printer.text(lineLR("", item.revenue));
+          });
+
+          line();
+          printer.text(lineLR("Total Bookings:", `${voucher.totalSeats} seats`));
+          line();
+
+          // Financial summary
+          printer.text("");
+          printer.style("B");
+          printer.text("FINANCIAL SUMMARY");
+          printer.style("NORMAL");
+          printer.text("");
+          printer.text(lineLR("Total Fare:", voucher.summary.totalFare));
+          printer.text(lineLR("Terminal Tax:", voucher.summary.terminalTax));
+          printer.text(lineLR("Cargo:", voucher.summary.cargo));
+          line();
+          printer.style("B");
+          printer.size(1, 1);
+          printer.text(lineLR("Grand Total:", voucher.summary.grandTotal));
+          printer.style("NORMAL");
+          printer.size(0, 0);
+          line();
+
+          // Feed & cut
+          printer.feed(4);
+          printer.cut("partial");
+          printer.close();
+          resolve();
+        } catch (printError) {
+          reject(new Error(`Print operation failed: ${printError.message}`));
+        }
+      });
+    } catch (error) {
+      reject(new Error(`Printer initialization failed: ${error.message}`));
+    }
   });
 }
 
 // Export
 module.exports = {
   printTicket,
+  printVoucher,
 };

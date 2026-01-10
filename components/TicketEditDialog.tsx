@@ -14,7 +14,7 @@ import { RadioGroup, RadioGroupItem } from './ui/radio-group';
 import { Badge } from './ui/badge';
 import { Alert, AlertDescription } from './ui/alert';
 import { CityCombobox } from './CityCombobox';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, Phone, User, CreditCard, Users, MapPin, Percent } from 'lucide-react';
 
 interface TicketEditDialogProps {
   open: boolean;
@@ -35,6 +35,7 @@ export function TicketEditDialog({
 }: TicketEditDialogProps) {
   const [name, setName] = useState('');
   const [cnic, setCnic] = useState('');
+  const [phone, setPhone] = useState('');
   const [gender, setGender] = useState<'male' | 'female'>('male');
   const [destination, setDestination] = useState('');
   const [totalDiscount, setTotalDiscount] = useState('0');
@@ -43,9 +44,10 @@ export function TicketEditDialog({
   // Populate form when ticket changes
   useEffect(() => {
     if (ticket) {
-      setName(ticket.passenger.name);
-      setCnic(ticket.passenger.cnic);
-      setGender(ticket.passenger.gender);
+      setName(ticket.passenger.name || '');
+      setCnic(ticket.passenger.cnic || '');
+      setPhone(ticket.passenger.phone || '');
+      setGender(ticket.passenger.gender || 'male');
       setDestination(ticket.destination);
       setTotalDiscount(ticket.totalDiscount.toString());
       setError('');
@@ -87,12 +89,8 @@ export function TicketEditDialog({
     try {
       setError('');
 
-      // Validation
-      if (!name.trim()) {
-        throw new Error('Passenger name is required');
-      }
-
-      if (!cnic.match(/^\d{5}-\d{7}-\d$/)) {
+      // Validation - only validate if fields have content
+      if (cnic.trim() && !cnic.match(/^\d{5}-\d{7}-\d$/)) {
         throw new Error('CNIC must be in format: XXXXX-XXXXXXX-X');
       }
 
@@ -117,8 +115,9 @@ export function TicketEditDialog({
       // Prepare updates
       const updates: Partial<BookingTicket> = {
         passenger: {
-          name: name.trim(),
-          cnic,
+          name: name.trim() || undefined,
+          cnic: cnic.trim() || undefined,
+          phone: phone.trim() || undefined,
           gender,
         },
         destination,
@@ -164,10 +163,13 @@ export function TicketEditDialog({
 
           {/* Passenger Name */}
           <div className="space-y-2">
-            <Label htmlFor="name">Passenger Name *</Label>
+            <Label htmlFor="name" className="flex items-center gap-2">
+              <User className="w-4 h-4 text-muted-foreground" />
+              Passenger Name
+            </Label>
             <Input
               id="name"
-              placeholder="Enter full name"
+              placeholder="Enter full name (optional)"
               value={name}
               onChange={(e) => setName(e.target.value)}
               className="h-12 text-base"
@@ -176,10 +178,13 @@ export function TicketEditDialog({
 
           {/* CNIC */}
           <div className="space-y-2">
-            <Label htmlFor="cnic">CNIC *</Label>
+            <Label htmlFor="cnic" className="flex items-center gap-2">
+              <CreditCard className="w-4 h-4 text-muted-foreground" />
+              CNIC Number
+            </Label>
             <Input
               id="cnic"
-              placeholder="XXXXX-XXXXXXX-X"
+              placeholder="XXXXX-XXXXXXX-X (optional)"
               value={cnic}
               onChange={(e) => handleCnicChange(e.target.value)}
               className="h-12 text-base font-mono"
@@ -190,9 +195,28 @@ export function TicketEditDialog({
             </p>
           </div>
 
+          {/* Phone */}
+          <div className="space-y-2">
+            <Label htmlFor="phone" className="flex items-center gap-2">
+              <Phone className="w-4 h-4 text-muted-foreground" />
+              Phone Number
+            </Label>
+            <Input
+              id="phone"
+              type="tel"
+              placeholder="03XX-XXXXXXX (optional)"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              className="h-12 text-base"
+            />
+          </div>
+
           {/* Gender */}
           <div className="space-y-2">
-            <Label>Gender *</Label>
+            <Label className="flex items-center gap-2">
+              <Users className="w-4 h-4 text-muted-foreground" />
+              Gender
+            </Label>
             <RadioGroup value={gender} onValueChange={(v) => setGender(v as 'male' | 'female')}>
               <div className="flex items-center gap-4">
                 <div className="flex items-center space-x-2">
@@ -213,7 +237,10 @@ export function TicketEditDialog({
 
           {/* Destination */}
           <div className="space-y-2">
-            <Label htmlFor="destination">Destination *</Label>
+            <Label htmlFor="destination" className="flex items-center gap-2">
+              <MapPin className="w-4 h-4 text-muted-foreground" />
+              Destination *
+            </Label>
             <CityCombobox
               value={destination}
               onValueChange={setDestination}
@@ -233,7 +260,10 @@ export function TicketEditDialog({
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="discount">Total Discount (Rs.)</Label>
+                <Label htmlFor="discount" className="flex items-center gap-2">
+                  <Percent className="w-4 h-4 text-muted-foreground" />
+                  Total Discount (Rs.)
+                </Label>
                 <Input
                   id="discount"
                   type="number"

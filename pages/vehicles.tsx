@@ -4,12 +4,28 @@ import { Button } from "../components/ui/button";
 import { VehicleCard } from "../components/VehicleCard";
 import { AddVehicleDialog } from "../components/AddVehicleDialog";
 import { useBooking } from "../contexts/BookingContext";
+import { Vehicle } from "../types/booking";
 import { Plus, ArrowLeft } from "lucide-react";
 
 export default function VehiclesPage() {
-  const { vehicles, addVehicle, removeVehicle } = useBooking();
+  const { vehicles, addVehicle, updateVehicle, removeVehicle } = useBooking();
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [expandedVehicle, setExpandedVehicle] = useState<string | null>(null);
+  const [editingVehicle, setEditingVehicle] = useState<Vehicle | null>(null);
+
+  const handleEdit = (vehicle: Vehicle) => {
+    setEditingVehicle(vehicle);
+    setShowAddDialog(true);
+  };
+
+  const handleUpdate = (vehicleId: string, updates: { name: string; registrationNumber: string }) => {
+    updateVehicle(vehicleId, updates);
+  };
+
+  const handleCloseDialog = () => {
+    setShowAddDialog(false);
+    setEditingVehicle(null);
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -23,7 +39,10 @@ export default function VehiclesPage() {
             </Link>
             <h1 className="text-2xl font-bold">My Vehicles</h1>
           </div>
-          <Button onClick={() => setShowAddDialog(true)} className="gap-2">
+          <Button onClick={() => {
+            setEditingVehicle(null);
+            setShowAddDialog(true);
+          }} className="gap-2">
             <Plus className="w-4 h-4" />
             Add Vehicle
           </Button>
@@ -41,7 +60,10 @@ export default function VehiclesPage() {
               Add your first vehicle to get started
             </p>
             <Button
-              onClick={() => setShowAddDialog(true)}
+              onClick={() => {
+                setEditingVehicle(null);
+                setShowAddDialog(true);
+              }}
               size="lg"
               className="gap-2"
             >
@@ -55,6 +77,7 @@ export default function VehiclesPage() {
               <VehicleCard
                 key={vehicle.id}
                 vehicle={vehicle}
+                onEdit={() => handleEdit(vehicle)}
                 onDelete={() => removeVehicle(vehicle.id)}
                 onClick={() =>
                   setExpandedVehicle(
@@ -70,8 +93,10 @@ export default function VehiclesPage() {
 
       <AddVehicleDialog
         open={showAddDialog}
-        onClose={() => setShowAddDialog(false)}
+        onClose={handleCloseDialog}
         onAdd={addVehicle}
+        vehicle={editingVehicle}
+        onUpdate={handleUpdate}
       />
     </div>
   );

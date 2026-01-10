@@ -8,6 +8,7 @@ interface TicketsSectionProps {
   vehicle: Vehicle;
   onEditTicket: (ticket: BookingTicket) => void;
   onCancelTicket: (ticketId: string) => void;
+  onPrintTicket: (ticket: BookingTicket) => void;
   canEdit: boolean;
 }
 
@@ -16,8 +17,14 @@ export function TicketsSection({
   vehicle,
   onEditTicket,
   onCancelTicket,
+  onPrintTicket,
   canEdit
 }: TicketsSectionProps) {
+  // Sort tickets by creation time (recent first)
+  const sortedTickets = [...tickets].sort((a, b) => {
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  });
+
   if (tickets.length === 0) {
     return (
       <Card>
@@ -51,13 +58,14 @@ export function TicketsSection({
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {tickets.map((ticket) => (
+        {sortedTickets.map((ticket) => (
           <TicketCard
             key={ticket.id}
             ticket={ticket}
             vehicle={vehicle}
             onEdit={() => onEditTicket(ticket)}
             onCancel={() => onCancelTicket(ticket.id)}
+            onPrint={() => onPrintTicket(ticket)}
             canEdit={canEdit}
           />
         ))}
