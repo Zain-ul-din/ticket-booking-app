@@ -44,12 +44,6 @@ export default function TerminalSetup() {
     router.push("/");
   };
 
-  const formatPhoneNumber = (value: string) => {
-    const digits = value.replace(/\D/g, "");
-    if (digits.length <= 4) return digits;
-    return `${digits.slice(0, 4)}-${digits.slice(4, 11)}`;
-  };
-
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-xl">
@@ -119,9 +113,7 @@ export default function TerminalSetup() {
                   id="contact"
                   placeholder="Enter contact number"
                   value={contactNumber}
-                  onChange={(e) =>
-                    setContactNumber(formatPhoneNumber(e.target.value))
-                  }
+                  onChange={(e) => setContactNumber(e.target.value)}
                   className="h-12 font-mono"
                   maxLength={12}
                   required
