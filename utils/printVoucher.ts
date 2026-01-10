@@ -1,6 +1,6 @@
-import { Voucher, Vehicle, VoucherFinancialSummary } from '../types/booking';
-import { formatDate, formatTime } from './dateUtils';
-import { toast } from './toast';
+import { Voucher, Vehicle, VoucherFinancialSummary } from "../types/booking";
+import { formatDate, formatTime } from "./dateUtils";
+import { toast } from "./toast";
 
 export async function printVoucherSummary(
   voucher: Voucher,
@@ -26,7 +26,7 @@ export async function printVoucherSummary(
         name: voucher.driverName,
         mobile: voucher.driverMobile,
       },
-      revenueByDestination: summary.revenueByDestination.map(item => ({
+      revenueByDestination: summary.revenueByDestination.map((item) => ({
         destination: item.destination,
         tickets: item.ticketCount,
         revenue: `${item.totalRevenue} PKR`,
@@ -41,18 +41,18 @@ export async function printVoucherSummary(
     };
 
     // Call Electron IPC to print voucher
-    const result = await window.customAPI.printVoucher(printData);
+    const result = await (window as any).customAPI.printVoucher(printData);
 
     if (result.success) {
-      toast.success('Voucher printed successfully');
+      toast.success("Voucher printed successfully");
       return true;
     } else {
-      toast.error(`Print failed: ${result.error || 'Unknown error'}`);
+      toast.error(`Print failed: ${result.error || "Unknown error"}`);
       return false;
     }
   } catch (error) {
-    console.error('Print voucher error:', error);
-    toast.error('Failed to print voucher. Please check printer connection.');
+    console.error("Print voucher error:", error);
+    toast.error("Failed to print voucher. Please check printer connection.");
     return false;
   }
 }

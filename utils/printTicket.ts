@@ -1,6 +1,6 @@
-import { BookingTicket, Vehicle, Voucher } from '../types/booking';
-import { formatDate, formatTime } from './dateUtils';
-import { toast } from './toast';
+import { BookingTicket, Vehicle, Voucher } from "../types/booking";
+import { formatDate, formatTime } from "./dateUtils";
+import { toast } from "./toast";
 
 export async function printTicket(
   ticket: BookingTicket,
@@ -11,7 +11,7 @@ export async function printTicket(
 ): Promise<boolean> {
   try {
     // Format seat numbers as strings
-    const seats = ticket.seatIds.map(id => id.toString());
+    const seats = ticket.seatIds.map((id) => id.toString());
 
     // Format departure date and time
     const departureDate = formatDate(new Date(voucher.date));
@@ -34,7 +34,11 @@ export async function printTicket(
         name: ticket.passenger.name || undefined,
         phone: ticket.passenger.phone || undefined,
         cnic: ticket.passenger.cnic || undefined,
-        gender: ticket.passenger.gender ? (ticket.passenger.gender === 'male' ? 'Male' : 'Female') : undefined,
+        gender: ticket.passenger.gender
+          ? ticket.passenger.gender === "male"
+            ? "Male"
+            : "Female"
+          : undefined,
       },
       fare: {
         price: `${ticket.totalBaseFare} PKR`,
@@ -44,18 +48,18 @@ export async function printTicket(
     };
 
     // Call Electron IPC to print
-    const result = await window.customAPI.printReceipt(printData);
+    const result = await (window as any).customAPI.printReceipt(printData);
 
     if (result.success) {
-      toast.success('Ticket printed successfully');
+      toast.success("Ticket printed successfully");
       return true;
     } else {
-      toast.error(`Print failed: ${result.error || 'Unknown error'}`);
+      toast.error(`Print failed: ${result.error || "Unknown error"}`);
       return false;
     }
   } catch (error) {
-    console.error('Print ticket error:', error);
-    toast.error('Failed to print ticket. Please check printer connection.');
+    console.error("Print ticket error:", error);
+    toast.error("Failed to print ticket. Please check printer connection.");
     return false;
   }
 }
