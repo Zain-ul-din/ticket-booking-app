@@ -9,8 +9,7 @@ const createWindow = async () => {
     height: 768,
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
-      nodeIntegration: true,
-      contextIsolation: false,
+      // nodeIntegration: true,
     },
   });
 
