@@ -1,7 +1,7 @@
 const { app, BrowserWindow, dialog, ipcMain } = require("electron");
 const path = require("path");
 const isDev = require("electron-is-dev");
-const printService = require("../services/printer.js");
+const printService = require("./services/printer.js");
 
 const createWindow = async () => {
   const mainWindow = new BrowserWindow({

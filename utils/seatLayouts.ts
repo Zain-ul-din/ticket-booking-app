@@ -6,46 +6,35 @@ import { Seat } from '../types/booking';
 
 /**
  * Generate seat layout for a Highroof van
- * Layout: 18 passenger seats + 1 driver = 19 total
+ * Layout: 12 passenger seats (no driver)
  *
- * Visual layout (matches bus-buddy-admin-main):
- *     Row 0: [0-Driver]       [ 1 ]  [ 2 ]
- *     Row 1: [ 3 ]  [ 4 ]  [ 5 ]  [ 6 ]
- *     Row 2: [ 7 ]  [8-F]  [ 9 ]  [10 ]
- *     Row 3: [11 ]  [12-F] [13 ]  [14 ]
- *     Row 4: [15 ]  [16 ]  [17 ]  [18 ]
- *
- * F = Folding seat
+ * Visual layout:
+ *     Row 0: [ 1 ]  [ 2 ]  [ 3 ]
+ *     Row 1: [ 4 ]  [ 5 ]  [ 6 ]
+ *     Row 2: [ 7 ]  [ 8 ]  [ 9 ]
+ *     Row 3: [10 ]  [11 ]  [12 ] (last row - folding seats)
  *
  * @returns Array of Seat objects for highroof van
  */
 export function generateHighroofLayout(): Seat[] {
-  return [
-    // Row 0 - Driver + 2 passenger seats
-    { id: 0, row: 0, col: 0, isFolding: false, isDriver: true },
-    { id: 1, row: 0, col: 2, isFolding: false, isDriver: false },
-    { id: 2, row: 0, col: 3, isFolding: false, isDriver: false },
-    // Row 1
-    { id: 3, row: 1, col: 0, isFolding: false, isDriver: false },
-    { id: 4, row: 1, col: 1, isFolding: false, isDriver: false },
-    { id: 5, row: 1, col: 2, isFolding: false, isDriver: false },
-    { id: 6, row: 1, col: 3, isFolding: false, isDriver: false },
-    // Row 2 - includes seat 8 (folding)
-    { id: 7, row: 2, col: 0, isFolding: false, isDriver: false },
-    { id: 8, row: 2, col: 1, isFolding: true, isDriver: false },
-    { id: 9, row: 2, col: 2, isFolding: false, isDriver: false },
-    { id: 10, row: 2, col: 3, isFolding: false, isDriver: false },
-    // Row 3 - includes seat 12 (folding)
-    { id: 11, row: 3, col: 0, isFolding: false, isDriver: false },
-    { id: 12, row: 3, col: 1, isFolding: true, isDriver: false },
-    { id: 13, row: 3, col: 2, isFolding: false, isDriver: false },
-    { id: 14, row: 3, col: 3, isFolding: false, isDriver: false },
-    // Row 4 (last row)
-    { id: 15, row: 4, col: 0, isFolding: false, isDriver: false },
-    { id: 16, row: 4, col: 1, isFolding: false, isDriver: false },
-    { id: 17, row: 4, col: 2, isFolding: false, isDriver: false },
-    { id: 18, row: 4, col: 3, isFolding: false, isDriver: false },
-  ];
+  const seats: Seat[] = [];
+  let seatId = 1;
+
+  // 4 rows × 3 columns = 12 seats (no driver)
+  for (let row = 0; row < 4; row++) {
+    for (let col = 0; col < 3; col++) {
+      const isFolding = row === 3; // Last row are folding seats
+      seats.push({
+        id: seatId++,
+        row,
+        col,
+        isFolding,
+        isDriver: false,
+      });
+    }
+  }
+
+  return seats;
 }
 
 /**

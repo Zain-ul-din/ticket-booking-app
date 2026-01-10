@@ -8,13 +8,15 @@ import { SeatMap } from "../../components/SeatMap";
 import { BookingDialog } from "../../components/BookingDialog";
 import { CancelBookingDialog } from "../../components/CancelBookingDialog";
 import { SelectedSeatsTray } from "../../components/SelectedSeatsTray";
-import { BulkBookingDialog } from "../../components/BulkBookingDialog";
+import { TicketsSection } from "../../components/TicketsSection";
+import { TicketEditDialog } from "../../components/TicketEditDialog";
 import { VoucherStateBadge } from "../../components/VoucherStateBadge";
 import { VoucherStateActions } from "../../components/VoucherStateActions";
 import { DepartureSummaryDialog } from "../../components/DepartureSummaryDialog";
 import { useBooking } from "../../contexts/BookingContext";
 import { getVoucherStatus, canEditVoucher } from "../../utils/voucherUtils";
-import { Seat, Passenger, BookedSeat } from "../../types/booking";
+import { deriveBookedSeatsFromTickets, findTicketBySeatId } from "../../utils/ticketUtils";
+import { Seat, BookingTicket } from "../../types/booking";
 import {
   ArrowLeft,
   Printer,
@@ -53,15 +55,12 @@ export default function BookingPage() {
   // Booking state
   const [selectedSeat, setSelectedSeat] = useState<Seat | null>(null);
   const [showBookingDialog, setShowBookingDialog] = useState(false);
-  const [editMode, setEditMode] = useState(false);
-  const [selectedBooking, setSelectedBooking] = useState<BookedSeat | null>(
-    null
-  );
+  const [selectedTicket, setSelectedTicket] = useState<BookingTicket | null>(null);
   const [showCancelDialog, setShowCancelDialog] = useState(false);
+  const [showTicketEditDialog, setShowTicketEditDialog] = useState(false);
 
   // Multi-seat selection state
   const [selectedSeats, setSelectedSeats] = useState<Seat[]>([]);
-  const [showBulkDialog, setShowBulkDialog] = useState(false);
 
   // Voucher state management
   const [showDepartureDialog, setShowDepartureDialog] = useState(false);
@@ -92,19 +91,17 @@ export default function BookingPage() {
     // Prevent modifications if voucher is not in boarding state
     if (!canEdit) return;
 
-    // Check if already booked
-    const existingBooking = voucher.bookedSeats.find(
-      (bs) => bs.seatId === seat.id
-    );
+    // Find ticket containing this seat
+    const ticket = findTicketBySeatId(voucher.tickets || [], seat.id);
 
-    if (existingBooking) {
-      // Show cancel dialog for booked seats
-      setSelectedBooking(existingBooking);
+    if (ticket) {
+      // Booked seat - show cancel dialog
+      setSelectedTicket(ticket);
       setShowCancelDialog(true);
       return;
     }
 
-    // Toggle seat selection
+    // Toggle seat selection for available seats
     setSelectedSeats((prev) => {
       const isSelected = prev.some((s) => s.id === seat.id);
       if (isSelected) {
@@ -118,7 +115,7 @@ export default function BookingPage() {
   const handleBookSelectedSeats = () => {
     if (selectedSeats.length === 0) return;
 
-    // Use first seat as reference, will apply same details to all
+    // Use first seat as reference for dialog
     setSelectedSeat(selectedSeats[0]);
     setShowBookingDialog(true);
   };
@@ -127,91 +124,84 @@ export default function BookingPage() {
     setSelectedSeats([]);
   };
 
-  const handleCancelBulkBooking = () => {
-    setShowBulkDialog(false);
-    setSelectedSeats([]);
-  };
+  const handleBookSeat = (ticketData: {
+    passenger: { name: string; cnic: string; gender: 'male' | 'female' };
+    destination: string;
+    baseFarePerSeat: number;
+    totalDiscount: number;
+  }) => {
+    const seatsToBook = selectedSeats.length > 0 ? selectedSeats : (selectedSeat ? [selectedSeat] : []);
+    if (seatsToBook.length === 0) return;
 
-  const handleBulkBook = (destination: string, fare: number) => {
-    // TODO: Add passenger details collection
-    // For now, just create bookings with placeholder data
-    const newBookings = selectedSeats.map((seat) => ({
-      seatId: seat.id,
-      destination,
-      fare,
-      discount: 0,
-      finalFare: fare,
-      passenger: {
-        name: "Passenger " + seat.id, // Placeholder
-        cnic: "00000-0000000-0", // Placeholder
-        gender: "male" as const,
-      },
-    }));
+    // Create new ticket
+    const newTicket: BookingTicket = {
+      id: crypto.randomUUID(),
+      voucherId: voucher.id,
+      seatIds: seatsToBook.map(s => s.id).sort((a, b) => a - b),
+      passenger: ticketData.passenger,
+      destination: ticketData.destination,
+      baseFarePerSeat: ticketData.baseFarePerSeat,
+      totalBaseFare: ticketData.baseFarePerSeat * seatsToBook.length,
+      totalDiscount: ticketData.totalDiscount,
+      finalTotal: (ticketData.baseFarePerSeat * seatsToBook.length) - ticketData.totalDiscount,
+      createdAt: new Date().toISOString()
+    };
+
+    const updatedTickets = [...(voucher.tickets || []), newTicket];
+    const updatedBookedSeats = deriveBookedSeatsFromTickets(updatedTickets);
 
     updateVoucher(voucher.id, {
-      bookedSeats: [...voucher.bookedSeats, ...newBookings],
+      tickets: updatedTickets,
+      bookedSeats: updatedBookedSeats
     });
 
-    setShowBulkDialog(false);
-    setSelectedSeats([]);
-  };
-
-  const handleBookSeat = (booking: Omit<BookedSeat, "seatId">) => {
-    if (editMode && selectedBooking) {
-      // Update existing booking
-      updateVoucher(voucher.id, {
-        bookedSeats: voucher.bookedSeats.map((bs) =>
-          bs.seatId === selectedBooking.seatId ? { ...bs, ...booking } : bs
-        ),
-      });
-      setEditMode(false);
-      setSelectedBooking(null);
-    } else if (selectedSeats.length > 0) {
-      // Multiple seats: apply same details to all
-      const newBookings = selectedSeats.map((seat) => ({
-        seatId: seat.id,
-        ...booking,
-      }));
-
-      updateVoucher(voucher.id, {
-        bookedSeats: [...voucher.bookedSeats, ...newBookings],
-      });
-    } else if (selectedSeat) {
-      // Single seat (fallback)
-      updateVoucher(voucher.id, {
-        bookedSeats: [
-          ...voucher.bookedSeats,
-          { seatId: selectedSeat.id, ...booking },
-        ],
-      });
-    }
     setShowBookingDialog(false);
     setSelectedSeat(null);
-    setSelectedSeats([]); // Clear selection to hide tray
+    setSelectedSeats([]);
   };
 
-  const handleCancelBooking = () => {
-    if (!selectedBooking) return;
+  const handleCancelTicket = (ticketId: string) => {
+    const updatedTickets = voucher.tickets?.filter(t => t.id !== ticketId) || [];
+    const updatedBookedSeats = deriveBookedSeatsFromTickets(updatedTickets);
 
     updateVoucher(voucher.id, {
-      bookedSeats: voucher.bookedSeats.filter(
-        (bs) => bs.seatId !== selectedBooking.seatId
-      ),
+      tickets: updatedTickets,
+      bookedSeats: updatedBookedSeats
     });
+
     setShowCancelDialog(false);
-    setSelectedBooking(null);
+    setSelectedTicket(null);
   };
 
-  const handleEditBooking = () => {
-    if (!selectedBooking) return;
+  const handleEditTicket = (ticket: BookingTicket) => {
+    setSelectedTicket(ticket);
+    setShowTicketEditDialog(true);
+  };
 
-    const seat = vehicle.seats.find((s) => s.id === selectedBooking.seatId);
-    if (seat) {
-      setSelectedSeat(seat);
-      setEditMode(true);
-      setShowCancelDialog(false);
-      setShowBookingDialog(true);
-    }
+  const handleSaveTicketEdit = (ticketId: string, updates: Partial<BookingTicket>) => {
+    const updatedTickets = voucher.tickets?.map(t => {
+      if (t.id !== ticketId) return t;
+
+      const updated = { ...t, ...updates, updatedAt: new Date().toISOString() };
+
+      // Recalculate if fare or discount changed
+      if (updates.baseFarePerSeat || updates.totalDiscount) {
+        updated.totalBaseFare = updated.baseFarePerSeat * updated.seatIds.length;
+        updated.finalTotal = updated.totalBaseFare - updated.totalDiscount;
+      }
+
+      return updated;
+    }) || [];
+
+    const updatedBookedSeats = deriveBookedSeatsFromTickets(updatedTickets);
+
+    updateVoucher(voucher.id, {
+      tickets: updatedTickets,
+      bookedSeats: updatedBookedSeats
+    });
+
+    setShowTicketEditDialog(false);
+    setSelectedTicket(null);
   };
 
   const handleMarkDeparted = () => {
@@ -427,8 +417,9 @@ export default function BookingPage() {
             )}
           </div>
 
-          {/* Main Content - Seat Map */}
-          <div className="lg:col-span-2">
+          {/* Main Content - Seat Map & Tickets */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Seat Map Card */}
             <Card>
               <CardContent className="p-8">
                 <div className="mb-6">
@@ -450,6 +441,15 @@ export default function BookingPage() {
                 </div>
               </CardContent>
             </Card>
+
+            {/* Tickets Section */}
+            <TicketsSection
+              tickets={voucher.tickets || []}
+              vehicle={vehicle}
+              onEditTicket={handleEditTicket}
+              onCancelTicket={handleCancelTicket}
+              canEdit={canEdit}
+            />
           </div>
         </div>
       </main>
@@ -467,13 +467,9 @@ export default function BookingPage() {
         onClose={() => {
           setShowBookingDialog(false);
           setSelectedSeat(null);
-          setEditMode(false);
-          setSelectedBooking(null);
         }}
         seat={selectedSeat}
         onBook={handleBookSeat}
-        editMode={editMode}
-        existingBooking={selectedBooking}
         availableRoutes={availableRoutes}
         origin={voucher?.origin || ""}
         selectedSeats={selectedSeats}
@@ -484,21 +480,23 @@ export default function BookingPage() {
         open={showCancelDialog}
         onClose={() => {
           setShowCancelDialog(false);
-          setSelectedBooking(null);
+          setSelectedTicket(null);
         }}
-        booking={selectedBooking}
-        onCancel={handleCancelBooking}
-        onEdit={handleEditBooking}
+        ticket={selectedTicket}
+        onCancel={() => selectedTicket && handleCancelTicket(selectedTicket.id)}
       />
 
-      {/* Bulk Booking Dialog */}
-      <BulkBookingDialog
-        open={showBulkDialog}
-        onClose={handleCancelBulkBooking}
-        seats={selectedSeats}
+      {/* Ticket Edit Dialog */}
+      <TicketEditDialog
+        open={showTicketEditDialog}
+        onClose={() => {
+          setShowTicketEditDialog(false);
+          setSelectedTicket(null);
+        }}
+        ticket={selectedTicket}
         availableRoutes={availableRoutes}
         origin={voucher?.origin || ""}
-        onBook={handleBulkBook}
+        onSave={handleSaveTicketEdit}
       />
 
       {/* Departure Summary Dialog */}

@@ -66,6 +66,24 @@ export interface BookedSeat {
 }
 
 /**
+ * Represents a booking ticket (one or more seats with same passenger)
+ * This is the source of truth for all booking operations
+ */
+export interface BookingTicket {
+  id: string;                    // Unique ticket ID (UUID)
+  voucherId: string;             // Reference to parent voucher
+  seatIds: number[];             // Array of seat IDs (can be 1 or more)
+  passenger: Passenger;          // Single passenger for all seats
+  destination: string;           // Destination city
+  baseFarePerSeat: number;       // Base fare per seat (from route)
+  totalBaseFare: number;         // baseFarePerSeat × seatIds.length
+  totalDiscount: number;         // TOTAL discount for entire booking
+  finalTotal: number;            // totalBaseFare - totalDiscount
+  createdAt: string;             // ISO timestamp
+  updatedAt?: string;            // ISO timestamp (for edit tracking)
+}
+
+/**
  * Voucher lifecycle states
  */
 export type VoucherStatus = 'boarding' | 'departed' | 'closed';
@@ -83,6 +101,9 @@ export interface Voucher {
   driverMobile: string;          // Driver's mobile number
   bookedSeats: BookedSeat[];     // Array of booked seats with passenger info
   createdAt: string;             // ISO timestamp when voucher was created
+
+  // Ticket-based booking system (source of truth)
+  tickets?: BookingTicket[];     // Primary booking data (auto-derives bookedSeats)
 
   // Voucher lifecycle management (optional for backward compatibility)
   status?: VoucherStatus;        // Lifecycle state (default: 'boarding')

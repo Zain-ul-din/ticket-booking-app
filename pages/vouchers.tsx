@@ -4,14 +4,18 @@ import { useRouter } from "next/router";
 import { Button } from "../components/ui/button";
 import { VoucherCard } from "../components/VoucherCard";
 import { CreateVoucherDialog } from "../components/CreateVoucherDialog";
+import { DepartureSummaryDialog } from "../components/DepartureSummaryDialog";
 import { useBooking } from "../contexts/BookingContext";
 import { Plus, ArrowLeft, FileText } from "lucide-react";
 import { formatDateFull } from "../utils/dateUtils";
+import { Voucher } from "../types/booking";
 
 export default function VouchersPage() {
   const router = useRouter();
-  const { vouchers, vehicles, removeVoucher, getVehicleById } = useBooking();
+  const { vouchers, vehicles, removeVoucher, updateVoucher, getVehicleById } = useBooking();
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [departureDialogOpen, setDepartureDialogOpen] = useState(false);
+  const [selectedVoucherForDeparture, setSelectedVoucherForDeparture] = useState<Voucher | null>(null);
 
   // Group vouchers by date
   const groupedVouchers = vouchers.reduce((acc, voucher) => {
@@ -24,6 +28,34 @@ export default function VouchersPage() {
   const sortedDates = Object.keys(groupedVouchers).sort(
     (a, b) => new Date(b).getTime() - new Date(a).getTime()
   );
+
+  const handleMarkDeparted = (voucher: Voucher) => {
+    setSelectedVoucherForDeparture(voucher);
+    setDepartureDialogOpen(true);
+  };
+
+  const handleConfirmDeparture = (terminalTax: number, cargo: number) => {
+    if (!selectedVoucherForDeparture) return;
+
+    updateVoucher(selectedVoucherForDeparture.id, {
+      status: 'departed',
+      terminalTax,
+      cargo,
+      departedAt: new Date().toISOString()
+    });
+
+    setDepartureDialogOpen(false);
+    setSelectedVoucherForDeparture(null);
+  };
+
+  const handleMarkClosed = (voucherId: string) => {
+    if (confirm('Mark this voucher as closed? This action cannot be undone.')) {
+      updateVoucher(voucherId, {
+        status: 'closed',
+        closedAt: new Date().toISOString()
+      });
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -98,6 +130,8 @@ export default function VouchersPage() {
                       vehicle={getVehicleById(voucher.vehicleId)}
                       onDelete={() => removeVoucher(voucher.id)}
                       onClick={() => router.push(`/booking/${voucher.id}`)}
+                      onMarkDeparted={() => handleMarkDeparted(voucher)}
+                      onMarkClosed={() => handleMarkClosed(voucher.id)}
                     />
                   ))}
                 </div>
@@ -106,6 +140,17 @@ export default function VouchersPage() {
           </div>
         )}
       </main>
+
+      <DepartureSummaryDialog
+        open={departureDialogOpen}
+        onClose={() => {
+          setDepartureDialogOpen(false);
+          setSelectedVoucherForDeparture(null);
+        }}
+        voucher={selectedVoucherForDeparture!}
+        vehicle={selectedVoucherForDeparture ? getVehicleById(selectedVoucherForDeparture.vehicleId) : undefined}
+        onConfirm={handleConfirmDeparture}
+      />
 
       <CreateVoucherDialog
         open={showCreateDialog}

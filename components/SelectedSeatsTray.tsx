@@ -49,22 +49,24 @@ export function SelectedSeatsTray({
                 </Badge>
               )}
             </div>
+          </div>
+
+          <div className="flex items-center gap-3">
             <Button
               variant="outline"
-              size="default"
+              size="lg"
               onClick={onClearAll}
               className="gap-1 text-muted-foreground hover:text-destructive"
             >
               <X className="w-4 h-4" />
               Cancel
             </Button>
+            {/* Right: Book button */}
+            <Button onClick={onBook} size="lg" className="gap-2 shadow-lg">
+              Book {count} {count === 1 ? "Seat" : "Seats"}
+              <ArrowRight className="w-5 h-5" />
+            </Button>
           </div>
-
-          {/* Right: Book button */}
-          <Button onClick={onBook} size="lg" className="gap-2 shadow-lg">
-            Book {count} {count === 1 ? "Seat" : "Seats"}
-            <ArrowRight className="w-5 h-5" />
-          </Button>
         </div>
       </div>
     </div>

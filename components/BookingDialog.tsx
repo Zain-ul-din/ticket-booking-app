@@ -26,7 +26,12 @@ interface BookingDialogProps {
   open: boolean;
   onClose: () => void;
   seat: Seat | null;
-  onBook: (booking: Omit<BookedSeat, "seatId">) => void;
+  onBook: (ticketData: {
+    passenger: { name: string; cnic: string; gender: 'male' | 'female' };
+    destination: string;
+    baseFarePerSeat: number;
+    totalDiscount: number;
+  }) => void;
   editMode?: boolean;
   existingBooking?: BookedSeat | null;
   availableRoutes: Route[];
@@ -52,9 +57,11 @@ export function BookingDialog({
   const [discount, setDiscount] = useState("0");
 
   const selectedRoute = availableRoutes.find((r) => r.id === selectedRouteId);
-  const fare = selectedRoute?.fare || 0;
-  const discountAmount = parseFloat(discount) || 0;
-  const finalFare = Math.max(0, fare - discountAmount);
+  const baseFarePerSeat = selectedRoute?.fare || 0;
+  const seatCount = selectedSeats.length > 0 ? selectedSeats.length : 1;
+  const totalBaseFare = baseFarePerSeat * seatCount;
+  const totalDiscount = parseFloat(discount) || 0;
+  const finalTotal = Math.max(0, totalBaseFare - totalDiscount);
 
   // Populate fields when editing or reset when opening
   useEffect(() => {
@@ -86,9 +93,8 @@ export function BookingDialog({
     onBook({
       passenger: { name: name.trim(), cnic: cnic.trim(), gender },
       destination: selectedRoute.destination,
-      fare: selectedRoute.fare,
-      discount: discountAmount,
-      finalFare,
+      baseFarePerSeat: selectedRoute.fare,
+      totalDiscount,
     });
 
     setName("");
@@ -275,45 +281,32 @@ export function BookingDialog({
             {/* Fare Summary */}
             {selectedRoute && (
               <div className="p-4 bg-primary/5 rounded-xl space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">
-                    Base Fare{selectedSeats.length > 1 ? " (per seat)" : ""}:
-                  </span>
-                  <span>Rs. {fare.toLocaleString()}</span>
-                </div>
-                {discountAmount > 0 && (
-                  <div className="flex justify-between text-sm text-green-600">
-                    <span>
-                      Discount{selectedSeats.length > 1 ? " (per seat)" : ""}:
-                    </span>
-                    <span>- Rs. {discountAmount.toLocaleString()}</span>
-                  </div>
-                )}
                 {selectedSeats.length > 1 && (
-                  <>
-                    <div className="flex justify-between text-sm pt-1 border-t">
-                      <span className="text-muted-foreground">
-                        Per Seat Total:
-                      </span>
-                      <span>Rs. {finalFare.toLocaleString()}</span>
-                    </div>
-                    <div className="flex justify-between font-bold text-lg pt-2 border-t">
-                      <span>Total ({selectedSeats.length} seats):</span>
-                      <span className="text-primary">
-                        Rs.{" "}
-                        {(finalFare * selectedSeats.length).toLocaleString()}
-                      </span>
-                    </div>
-                  </>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">
+                      {seatCount} seats × Rs. {baseFarePerSeat.toLocaleString()}
+                    </span>
+                    <span className="font-medium">Rs. {totalBaseFare.toLocaleString()}</span>
+                  </div>
                 )}
                 {selectedSeats.length <= 1 && (
-                  <div className="flex justify-between font-bold text-lg pt-2 border-t">
-                    <span>Total:</span>
-                    <span className="text-primary">
-                      Rs. {finalFare.toLocaleString()}
-                    </span>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Base Fare:</span>
+                    <span>Rs. {baseFarePerSeat.toLocaleString()}</span>
                   </div>
                 )}
+                {totalDiscount > 0 && (
+                  <div className="flex justify-between text-sm text-green-600">
+                    <span>Total Discount:</span>
+                    <span>- Rs. {totalDiscount.toLocaleString()}</span>
+                  </div>
+                )}
+                <div className="flex justify-between font-bold text-lg pt-2 border-t">
+                  <span>Final Total:</span>
+                  <span className="text-primary">
+                    Rs. {finalTotal.toLocaleString()}
+                  </span>
+                </div>
               </div>
             )}
 
@@ -324,7 +317,7 @@ export function BookingDialog({
                 className="flex items-center gap-2 text-base"
               >
                 <Percent className="w-4 h-4 text-muted-foreground" />
-                Discount Amount (Rs.)
+                Total Discount (Rs.)
               </Label>
               <Input
                 id="discount"
@@ -334,8 +327,11 @@ export function BookingDialog({
                 onChange={(e) => setDiscount(e.target.value)}
                 className="h-12"
                 min="0"
-                max={fare}
+                max={totalBaseFare}
               />
+              <p className="text-xs text-muted-foreground">
+                Applies to total fare{selectedSeats.length > 1 ? ' for all seats' : ''}
+              </p>
             </div>
 
             <DialogFooter className="gap-2 sm:gap-0">

@@ -16,6 +16,7 @@ import {
   generateBusLayout,
 } from "../utils/seatLayouts";
 import { getTodayString } from "../utils/dateUtils";
+import { migrateBookedSeatsToTickets, deriveBookedSeatsFromTickets } from "../utils/ticketUtils";
 
 /**
  * Shape of the booking state
@@ -221,6 +222,28 @@ export function BookingProvider({ children }: BookingProviderProps) {
       }
     }
   }, [state]);
+
+  // Auto-migrate vouchers from bookedSeats to tickets format (run once on mount)
+  useEffect(() => {
+    const needsMigration = state.vouchers.some(
+      v => !v.tickets && v.bookedSeats?.length > 0
+    );
+
+    if (needsMigration) {
+      console.log('Migrating vouchers to ticket format...');
+
+      setState(prev => ({
+        ...prev,
+        vouchers: prev.vouchers.map(v => {
+          if (!v.tickets && v.bookedSeats?.length > 0) {
+            const tickets = migrateBookedSeatsToTickets(v.bookedSeats, v.id);
+            return { ...v, tickets };
+          }
+          return v;
+        })
+      }));
+    }
+  }, []); // Run once on mount
 
   // Vehicle operations
 
