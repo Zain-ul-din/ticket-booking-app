@@ -79,9 +79,9 @@ function printTicket(data = null) {
     printer.text("Veh NO: " + ticket.vehicleNumber);
 
     const seats = ticket.seats;
-    for (let i = 0; i < seats.length; i += 3) {
+    for (let i = 0; i < seats.length; i += 4) {
       printer.text(
-        i == 0 ? "Seat NO: " : "" + seats.slice(i, i + 3).join(", ")
+        `${i == 0 ? "Seat NO: " : ""}` + seats.slice(i, i + 4).join(",")
       );
     }
     printer.style("NORMAL");
@@ -104,7 +104,7 @@ function printTicket(data = null) {
 
     printer.text(lineLR("Fare:", ticket.fare.price));
     printer.text(lineLR("Discount:", ticket.fare.discount));
-    printer.text(lineLR("Quantity:", ticket.fare.price));
+    printer.text(lineLR("Quantity:", ticket.seats.length + " X"));
     printer.style("b");
     printer.text(lineLR("Total Payable:", ticket.fare.total));
     printer.style("normal");

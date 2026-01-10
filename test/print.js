@@ -16,6 +16,6 @@ printService.printTicket({
   fare: {
     price: "1500 PKR",
     discount: "-200 PKR",
-    total: "1300 PKR",
+    total: "14800 PKR",
   },
 });
