@@ -66,6 +66,11 @@ export interface BookedSeat {
 }
 
 /**
+ * Voucher lifecycle states
+ */
+export type VoucherStatus = 'boarding' | 'departed' | 'closed';
+
+/**
  * Represents a daily trip/voucher
  */
 export interface Voucher {
@@ -78,6 +83,33 @@ export interface Voucher {
   driverMobile: string;          // Driver's mobile number
   bookedSeats: BookedSeat[];     // Array of booked seats with passenger info
   createdAt: string;             // ISO timestamp when voucher was created
+
+  // Voucher lifecycle management (optional for backward compatibility)
+  status?: VoucherStatus;        // Lifecycle state (default: 'boarding')
+  terminalTax?: number;          // Terminal tax amount (Rs.) - entered at departure
+  cargo?: number;                // Cargo value (Rs.) - entered at departure
+  departedAt?: string;           // ISO timestamp when marked as departed
+  closedAt?: string;             // ISO timestamp when marked as closed
+}
+
+/**
+ * Revenue breakdown for a single destination
+ */
+export interface DestinationRevenue {
+  destination: string;           // Destination city name
+  ticketCount: number;           // Number of tickets sold to this destination
+  totalRevenue: number;          // Sum of all finalFare for this destination
+}
+
+/**
+ * Financial summary for a voucher
+ */
+export interface VoucherFinancialSummary {
+  revenueByDestination: DestinationRevenue[];  // Revenue grouped by destination
+  totalFare: number;             // Sum of all ticket fares
+  terminalTax: number;           // Terminal tax amount (negative impact)
+  cargo: number;                 // Cargo revenue (positive impact)
+  grandTotal: number;            // Total fare - terminal tax + cargo
 }
 
 /**

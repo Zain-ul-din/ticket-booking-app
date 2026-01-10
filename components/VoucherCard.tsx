@@ -2,8 +2,11 @@ import { Voucher, Vehicle } from '../types/booking';
 import { Card, CardContent, CardHeader } from './ui/card';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
+import { VoucherStateBadge } from './VoucherStateBadge';
 import { Bus, Car, Clock, MapPin, Phone, User, Trash2, ChevronRight } from 'lucide-react';
 import { formatDate } from '../utils/dateUtils';
+import { getVoucherStatus } from '../utils/voucherUtils';
+import { cn } from '../lib/utils';
 
 interface VoucherCardProps {
   voucher: Voucher;
@@ -16,10 +19,16 @@ export function VoucherCard({ voucher, vehicle, onDelete, onClick }: VoucherCard
   const bookedCount = voucher.bookedSeats.length;
   const totalSeats = vehicle?.totalSeats || 0;
   const Icon = vehicle?.type === 'bus' ? Bus : Car;
+  const status = getVoucherStatus(voucher);
+  const isActive = status === 'boarding';
 
   return (
     <Card
-      className={`overflow-hidden transition-all ${onClick ? 'cursor-pointer hover:border-primary hover:shadow-md' : ''}`}
+      className={cn(
+        'overflow-hidden transition-all',
+        onClick && 'cursor-pointer hover:border-primary hover:shadow-md',
+        !isActive && 'opacity-70'
+      )}
       onClick={onClick}
     >
       <CardHeader className="pb-3 bg-gradient-to-r from-primary/5 to-transparent">
@@ -35,9 +44,10 @@ export function VoucherCard({ voucher, vehicle, onDelete, onClick }: VoucherCard
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
+            <VoucherStateBadge status={status} size="sm" />
             <Badge variant={bookedCount === totalSeats ? 'default' : 'secondary'}>
-              {bookedCount}/{totalSeats} Booked
+              {bookedCount}/{totalSeats}
             </Badge>
             {onDelete && (
               <Button

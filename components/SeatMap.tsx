@@ -1,6 +1,6 @@
 import { Seat, BookedSeat } from '../types/booking';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
-import { User } from 'lucide-react';
+import { User, Check } from 'lucide-react';
 
 interface SeatMapProps {
   seats: Seat[];
@@ -8,6 +8,7 @@ interface SeatMapProps {
   onSeatClick?: (seat: Seat) => void;
   readOnly?: boolean;
   compact?: boolean;
+  selectedSeats?: Seat[];
 }
 
 export function SeatMap({
@@ -15,6 +16,7 @@ export function SeatMap({
   bookedSeats = [],
   readOnly = false,
   compact = false,
+  selectedSeats = [],
   onSeatClick,
 }: SeatMapProps) {
   // Get grid dimensions from seats
@@ -36,11 +38,17 @@ export function SeatMap({
     return bookedSeats.find(bs => bs.seatId === seatId);
   };
 
+  // Check if seat is selected (bulk mode)
+  const isSeatSelected = (seatId: number) => {
+    return selectedSeats.some(s => s.id === seatId);
+  };
+
   const getSeatClass = (seat: Seat, booking?: BookedSeat) => {
     const baseClass = compact ? 'w-8 h-8 text-xs' : 'w-12 h-12 text-sm';
     const isBooked = !!booking;
     const isDriver = seat.isDriver;
     const isFolding = seat.isFolding;
+    const isSelected = isSeatSelected(seat.id);
 
     if (isDriver) {
       return `${baseClass} seat seat-driver cursor-default`;
@@ -55,6 +63,11 @@ export function SeatMap({
 
     if (isBooked) {
       return `${baseClass} seat seat-booked cursor-pointer`;
+    }
+
+    // Selected seats
+    if (isSelected) {
+      return `${baseClass} seat seat-selected cursor-pointer`;
     }
 
     if (isFolding && !isBooked) {
@@ -93,6 +106,7 @@ export function SeatMap({
               const isBooked = !!booking;
               const isDriver = seat.isDriver;
               const isFolding = seat.isFolding;
+              const isSelected = isSeatSelected(seat.id);
 
               const seatButton = (
                 <button
@@ -104,6 +118,8 @@ export function SeatMap({
                   title={
                     isDriver
                       ? 'Driver'
+                      : isSelected
+                      ? 'Selected'
                       : booking
                       ? 'Booked'
                       : String(seat.id)
@@ -111,6 +127,11 @@ export function SeatMap({
                 >
                   {isDriver ? (
                     <User className="w-4 h-4" />
+                  ) : isSelected ? (
+                    <div className="flex items-center justify-center gap-0.5">
+                      <Check className="w-3 h-3" />
+                      <span className="text-xs">{seat.id}</span>
+                    </div>
                   ) : isFolding && !isBooked ? (
                     'F'
                   ) : (
@@ -148,6 +169,12 @@ export function SeatMap({
         <div className="flex items-center gap-2">
           <div className={`seat seat-available ${compact ? 'w-6 h-6 text-[10px]' : 'w-8 h-8 text-xs'}`}>1</div>
           <span className="text-muted-foreground">Available</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className={`seat seat-selected ${compact ? 'w-6 h-6 text-[10px]' : 'w-8 h-8 text-xs'}`}>
+            <Check className="w-3 h-3" />
+          </div>
+          <span className="text-muted-foreground">Selected</span>
         </div>
         <div className="flex items-center gap-2">
           <div className={`seat seat-booked ${compact ? 'w-6 h-6 text-[10px]' : 'w-8 h-8 text-xs'}`}>2</div>

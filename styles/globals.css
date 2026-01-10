@@ -2,95 +2,95 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
 
 @layer base {
   :root {
-  --background: 40 33% 98%;
-  --foreground: 25 30% 15%;
+    --background: 40 33% 98%;
+    --foreground: 25 30% 15%;
 
-  --card: 0 0% 100%;
-  --card-foreground: 25 30% 15%;
+    --card: 0 0% 100%;
+    --card-foreground: 25 30% 15%;
 
-  --popover: 0 0% 100%;
-  --popover-foreground: 25 30% 15%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 25 30% 15%;
 
-  --primary: 25 95% 50%;
-  --primary-foreground: 0 0% 100%;
+    --primary: 25 95% 50%;
+    --primary-foreground: 0 0% 100%;
 
-  --secondary: 35 100% 95%;
-  --secondary-foreground: 25 80% 35%;
+    --secondary: 35 100% 95%;
+    --secondary-foreground: 25 80% 35%;
 
-  --muted: 35 20% 92%;
-  --muted-foreground: 25 15% 45%;
+    --muted: 35 20% 92%;
+    --muted-foreground: 25 15% 45%;
 
-  --accent: 35 100% 95%;
-  --accent-foreground: 25 80% 35%;
+    --accent: 35 100% 95%;
+    --accent-foreground: 25 80% 35%;
 
-  --destructive: 0 84% 60%;
-  --destructive-foreground: 0 0% 100%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
 
-  --success: 142 72% 45%;
-  --success-foreground: 0 0% 100%;
+    --success: 142 72% 45%;
+    --success-foreground: 0 0% 100%;
 
-  --border: 35 25% 88%;
-  --input: 35 25% 88%;
-  --ring: 25 95% 50%;
+    --border: 35 25% 88%;
+    --input: 35 25% 88%;
+    --ring: 25 95% 50%;
 
-  --radius: 0.75rem;
+    --radius: 0.75rem;
 
-  --sidebar-background: 0 0% 98%;
-  --sidebar-foreground: 240 5.3% 26.1%;
-  --sidebar-primary: 240 5.9% 10%;
-  --sidebar-primary-foreground: 0 0% 98%;
-  --sidebar-accent: 240 4.8% 95.9%;
-  --sidebar-accent-foreground: 240 5.9% 10%;
-  --sidebar-border: 220 13% 91%;
-  --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
 
-  /* Custom tokens */
-  --seat-available: 142 72% 45%;
-  --seat-booked: 25 95% 50%;
-  --seat-folding: 220 14% 70%;
-  --seat-driver: 220 80% 55%;
-}
+    /* Custom tokens */
+    --seat-available: 142 72% 45%;
+    --seat-booked: 25 95% 50%;
+    --seat-folding: 220 14% 70%;
+    --seat-driver: 220 80% 55%;
+  }
 
-.dark {
-  --background: 25 30% 8%;
-  --foreground: 40 33% 98%;
+  .dark {
+    --background: 25 30% 8%;
+    --foreground: 40 33% 98%;
 
-  --card: 25 25% 12%;
-  --card-foreground: 40 33% 98%;
+    --card: 25 25% 12%;
+    --card-foreground: 40 33% 98%;
 
-  --popover: 25 25% 12%;
-  --popover-foreground: 40 33% 98%;
+    --popover: 25 25% 12%;
+    --popover-foreground: 40 33% 98%;
 
-  --primary: 25 95% 55%;
-  --primary-foreground: 0 0% 100%;
+    --primary: 25 95% 55%;
+    --primary-foreground: 0 0% 100%;
 
-  --secondary: 25 20% 18%;
-  --secondary-foreground: 40 33% 90%;
+    --secondary: 25 20% 18%;
+    --secondary-foreground: 40 33% 90%;
 
-  --muted: 25 15% 20%;
-  --muted-foreground: 35 15% 60%;
+    --muted: 25 15% 20%;
+    --muted-foreground: 35 15% 60%;
 
-  --accent: 25 20% 18%;
-  --accent-foreground: 40 33% 90%;
+    --accent: 25 20% 18%;
+    --accent-foreground: 40 33% 90%;
 
-  --destructive: 0 62% 45%;
-  --destructive-foreground: 0 0% 100%;
+    --destructive: 0 62% 45%;
+    --destructive-foreground: 0 0% 100%;
 
-  --success: 142 72% 40%;
-  --success-foreground: 0 0% 100%;
+    --success: 142 72% 40%;
+    --success-foreground: 0 0% 100%;
 
-  --border: 25 15% 22%;
-  --input: 25 15% 22%;
-  --ring: 25 95% 55%;
+    --border: 25 15% 22%;
+    --input: 25 15% 22%;
+    --ring: 25 95% 55%;
 
-  --seat-available: 142 72% 40%;
-  --seat-booked: 25 95% 55%;
-  --seat-folding: 220 14% 50%;
-  --seat-driver: 220 80% 50%;
+    --seat-available: 142 72% 40%;
+    --seat-booked: 25 95% 55%;
+    --seat-folding: 220 14% 50%;
+    --seat-driver: 220 80% 50%;
   }
 }
 
@@ -101,7 +101,11 @@
 
   body {
     @apply bg-background text-foreground font-sans antialiased;
-    font-family: 'Inter', sans-serif;
+    font-family: "Inter", sans-serif;
+  }
+
+  html {
+    font-size: 19px;
   }
 }
 
@@ -112,6 +116,10 @@
 
   .seat-available {
     @apply bg-success/20 border-success text-success hover:bg-success hover:text-success-foreground;
+  }
+
+  .seat-selected {
+    @apply bg-orange-200 hover:bg-orange-300 text-orange-900 border-orange-500 ring-2 ring-orange-400;
   }
 
   .seat-booked {

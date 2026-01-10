@@ -7,7 +7,13 @@ import { Card, CardContent } from "../../components/ui/card";
 import { SeatMap } from "../../components/SeatMap";
 import { BookingDialog } from "../../components/BookingDialog";
 import { CancelBookingDialog } from "../../components/CancelBookingDialog";
+import { SelectedSeatsTray } from "../../components/SelectedSeatsTray";
+import { BulkBookingDialog } from "../../components/BulkBookingDialog";
+import { VoucherStateBadge } from "../../components/VoucherStateBadge";
+import { VoucherStateActions } from "../../components/VoucherStateActions";
+import { DepartureSummaryDialog } from "../../components/DepartureSummaryDialog";
 import { useBooking } from "../../contexts/BookingContext";
+import { getVoucherStatus, canEditVoucher } from "../../utils/voucherUtils";
 import { Seat, Passenger, BookedSeat } from "../../types/booking";
 import { ArrowLeft, Printer, MapPin, Clock, User, Phone, Bus, Car } from "lucide-react";
 import { formatDate } from "../../utils/dateUtils";
@@ -25,11 +31,22 @@ export default function BookingPage() {
     ? getRoutesByOrigin(voucher.origin).filter(route => route.vehicleType === vehicle.type)
     : [];
 
+  // Booking state
   const [selectedSeat, setSelectedSeat] = useState<Seat | null>(null);
   const [showBookingDialog, setShowBookingDialog] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState<BookedSeat | null>(null);
   const [showCancelDialog, setShowCancelDialog] = useState(false);
+
+  // Multi-seat selection state
+  const [selectedSeats, setSelectedSeats] = useState<Seat[]>([]);
+  const [showBulkDialog, setShowBulkDialog] = useState(false);
+
+  // Voucher state management
+  const [showDepartureDialog, setShowDepartureDialog] = useState(false);
+
+  // Check if bookings can be edited based on voucher status
+  const canEdit = voucher ? canEditVoucher(voucher) : true;
 
   if (!voucher || !vehicle) {
     return (
@@ -49,6 +66,9 @@ export default function BookingPage() {
   const bookedCount = voucher.bookedSeats.length;
 
   const handleSeatClick = (seat: Seat) => {
+    // Prevent modifications if voucher is not in boarding state
+    if (!canEdit) return;
+
     // Check if already booked
     const existingBooking = voucher.bookedSeats.find(bs => bs.seatId === seat.id);
 
@@ -59,8 +79,56 @@ export default function BookingPage() {
       return;
     }
 
-    setSelectedSeat(seat);
+    // Toggle seat selection
+    setSelectedSeats(prev => {
+      const isSelected = prev.some(s => s.id === seat.id);
+      if (isSelected) {
+        return prev.filter(s => s.id !== seat.id);
+      } else {
+        return [...prev, seat];
+      }
+    });
+  };
+
+  const handleBookSelectedSeats = () => {
+    if (selectedSeats.length === 0) return;
+
+    // Use first seat as reference, will apply same details to all
+    setSelectedSeat(selectedSeats[0]);
     setShowBookingDialog(true);
+  };
+
+  const handleClearSelectedSeats = () => {
+    setSelectedSeats([]);
+  };
+
+  const handleCancelBulkBooking = () => {
+    setShowBulkDialog(false);
+    setSelectedSeats([]);
+  };
+
+  const handleBulkBook = (destination: string, fare: number) => {
+    // TODO: Add passenger details collection
+    // For now, just create bookings with placeholder data
+    const newBookings = selectedSeats.map(seat => ({
+      seatId: seat.id,
+      destination,
+      fare,
+      discount: 0,
+      finalFare: fare,
+      passenger: {
+        name: 'Passenger ' + seat.id, // Placeholder
+        cnic: '00000-0000000-0', // Placeholder
+        gender: 'male' as const,
+      },
+    }));
+
+    updateVoucher(voucher.id, {
+      bookedSeats: [...voucher.bookedSeats, ...newBookings],
+    });
+
+    setShowBulkDialog(false);
+    setSelectedSeats([]);
   };
 
   const handleBookSeat = (booking: Omit<BookedSeat, 'seatId'>) => {
@@ -75,8 +143,21 @@ export default function BookingPage() {
       });
       setEditMode(false);
       setSelectedBooking(null);
+    } else if (selectedSeats.length > 0) {
+      // Multiple seats: apply same details to all
+      const newBookings = selectedSeats.map(seat => ({
+        seatId: seat.id,
+        ...booking
+      }));
+
+      updateVoucher(voucher.id, {
+        bookedSeats: [
+          ...voucher.bookedSeats,
+          ...newBookings
+        ]
+      });
     } else if (selectedSeat) {
-      // New booking
+      // Single seat (fallback)
       updateVoucher(voucher.id, {
         bookedSeats: [
           ...voucher.bookedSeats,
@@ -86,6 +167,7 @@ export default function BookingPage() {
     }
     setShowBookingDialog(false);
     setSelectedSeat(null);
+    setSelectedSeats([]); // Clear selection to hide tray
   };
 
   const handleCancelBooking = () => {
@@ -114,6 +196,29 @@ export default function BookingPage() {
 
   const handlePrint = () => {
     window.print();
+  };
+
+  const handleMarkDeparted = () => {
+    setShowDepartureDialog(true);
+  };
+
+  const handleConfirmDeparture = (terminalTax: number, cargo: number) => {
+    updateVoucher(voucher.id, {
+      status: 'departed',
+      terminalTax,
+      cargo,
+      departedAt: new Date().toISOString()
+    });
+    setShowDepartureDialog(false);
+  };
+
+  const handleMarkClosed = () => {
+    if (confirm('Mark this voucher as closed? This action cannot be undone.')) {
+      updateVoucher(voucher.id, {
+        status: 'closed',
+        closedAt: new Date().toISOString()
+      });
+    }
   };
 
   const totalSeats = vehicle.seats.filter((s) => !s.isDriver).length;
@@ -205,7 +310,7 @@ export default function BookingPage() {
                   </div>
                 </div>
 
-                <div className="pt-4 border-t">
+                <div className="pt-4 border-t space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-muted-foreground">
                       Booking Status
@@ -214,9 +319,32 @@ export default function BookingPage() {
                       {bookedCount}/{totalSeats} Seats
                     </Badge>
                   </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">
+                      Voucher Status
+                    </span>
+                    <VoucherStateBadge status={getVoucherStatus(voucher)} size="md" />
+                  </div>
                 </div>
               </CardContent>
             </Card>
+
+            {/* Voucher State Actions */}
+            <VoucherStateActions
+              voucher={voucher}
+              onMarkDeparted={handleMarkDeparted}
+              onMarkClosed={handleMarkClosed}
+              variant="full"
+            />
+
+            {/* Warning for non-boarding status */}
+            {!canEdit && (
+              <div className="p-4 bg-orange-50 dark:bg-orange-950/30 border border-orange-200 dark:border-orange-800 rounded-lg">
+                <p className="text-sm text-orange-900 dark:text-orange-100 font-medium">
+                  This voucher has {getVoucherStatus(voucher)}. Bookings cannot be modified.
+                </p>
+              </div>
+            )}
 
             {/* Passengers List */}
             {voucher.bookedSeats.length > 0 && (
@@ -276,13 +404,19 @@ export default function BookingPage() {
             <Card>
               <CardContent className="p-8">
                 <div className="mb-6">
-                  <h2 className="text-xl font-bold text-center">Select a Seat to Book</h2>
+                  <h2 className="text-xl font-bold text-center">
+                    Select Seats to Book
+                  </h2>
+                  <p className="text-sm text-muted-foreground text-center mt-2">
+                    Click on seats to select them. Selected seats will appear in the tray below.
+                  </p>
                 </div>
                 <div className="flex justify-center">
                   <SeatMap
                     seats={vehicle.seats}
                     bookedSeats={voucher.bookedSeats}
                     onSeatClick={handleSeatClick}
+                    selectedSeats={selectedSeats}
                   />
                 </div>
               </CardContent>
@@ -290,6 +424,13 @@ export default function BookingPage() {
           </div>
         </div>
       </main>
+
+      {/* Selected Seats Tray */}
+      <SelectedSeatsTray
+        selectedSeats={selectedSeats}
+        onClearAll={handleClearSelectedSeats}
+        onBook={handleBookSelectedSeats}
+      />
 
       {/* Booking Dialog */}
       <BookingDialog
@@ -306,6 +447,7 @@ export default function BookingPage() {
         existingBooking={selectedBooking}
         availableRoutes={availableRoutes}
         origin={voucher?.origin || ''}
+        selectedSeats={selectedSeats}
       />
 
       {/* Cancel Booking Dialog */}
@@ -318,6 +460,25 @@ export default function BookingPage() {
         booking={selectedBooking}
         onCancel={handleCancelBooking}
         onEdit={handleEditBooking}
+      />
+
+      {/* Bulk Booking Dialog */}
+      <BulkBookingDialog
+        open={showBulkDialog}
+        onClose={handleCancelBulkBooking}
+        seats={selectedSeats}
+        availableRoutes={availableRoutes}
+        origin={voucher?.origin || ''}
+        onBook={handleBulkBook}
+      />
+
+      {/* Departure Summary Dialog */}
+      <DepartureSummaryDialog
+        open={showDepartureDialog}
+        onClose={() => setShowDepartureDialog(false)}
+        voucher={voucher}
+        vehicle={vehicle}
+        onConfirm={handleConfirmDeparture}
       />
     </div>
   );

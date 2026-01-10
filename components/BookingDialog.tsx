@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import {
   Dialog,
   DialogContent,
@@ -9,6 +10,7 @@ import {
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
+import { Badge } from './ui/badge';
 import { RadioGroup, RadioGroupItem } from './ui/radio-group';
 import {
   Select,
@@ -29,6 +31,7 @@ interface BookingDialogProps {
   existingBooking?: BookedSeat | null;
   availableRoutes: Route[];
   origin: string;
+  selectedSeats?: Seat[];
 }
 
 export function BookingDialog({
@@ -39,7 +42,8 @@ export function BookingDialog({
   editMode = false,
   existingBooking = null,
   availableRoutes,
-  origin
+  origin,
+  selectedSeats = []
 }: BookingDialogProps) {
   const [name, setName] = useState('');
   const [cnic, setCnic] = useState('');
@@ -106,34 +110,76 @@ export function BookingDialog({
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-xl">
-            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-              <span className="text-primary font-bold">{seat?.id}</span>
-            </div>
-            {editMode ? `Edit Seat #${seat?.id}` : `Book Seat #${seat?.id}`}
+          <DialogTitle className="text-xl">
+            {selectedSeats.length > 1 ? (
+              <div className="space-y-3">
+                <div>Book {selectedSeats.length} Seats</div>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-sm font-normal text-muted-foreground">Seats:</span>
+                  {selectedSeats.map((s) => (
+                    <Badge
+                      key={s.id}
+                      className="px-2.5 py-1 text-sm font-bold bg-orange-500 text-white"
+                    >
+                      {s.id}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <span className="text-primary font-bold">{seat?.id}</span>
+                </div>
+                {editMode ? `Edit Seat #${seat?.id}` : `Book Seat #${seat?.id}`}
+              </div>
+            )}
           </DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Destination Selection */}
-          <div className="space-y-2">
-            <Label className="flex items-center gap-2 text-base">
-              <MapPin className="w-4 h-4 text-muted-foreground" />
-              Destination (from {origin})
-            </Label>
-            <Select value={selectedRouteId} onValueChange={setSelectedRouteId} required>
-              <SelectTrigger className="h-12">
-                <SelectValue placeholder="Select destination" />
-              </SelectTrigger>
-              <SelectContent>
-                {availableRoutes.map((route) => (
-                  <SelectItem key={route.id} value={route.id}>
-                    {route.destination} — Rs. {route.fare.toLocaleString()}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+        {availableRoutes.length === 0 ? (
+          <div className="py-8 text-center space-y-4">
+            <div className="w-16 h-16 mx-auto rounded-full bg-muted flex items-center justify-center">
+              <MapPin className="w-8 h-8 text-muted-foreground" />
+            </div>
+            <div className="space-y-2">
+              <h3 className="text-lg font-semibold">No Routes Available</h3>
+              <p className="text-sm text-muted-foreground max-w-sm mx-auto">
+                No routes have been configured from {origin}. Please add routes first to enable bookings.
+              </p>
+            </div>
+            <div className="flex gap-3 justify-center pt-2">
+              <Button variant="outline" onClick={onClose}>
+                Cancel
+              </Button>
+              <Link href="/routes">
+                <Button>
+                  Go to Routes
+                </Button>
+              </Link>
+            </div>
           </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Destination Selection */}
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2 text-base">
+                <MapPin className="w-4 h-4 text-muted-foreground" />
+                Destination (from {origin})
+              </Label>
+              <Select value={selectedRouteId} onValueChange={setSelectedRouteId} required>
+                <SelectTrigger className="h-12">
+                  <SelectValue placeholder="Select destination" />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableRoutes.map((route) => (
+                    <SelectItem key={route.id} value={route.id}>
+                      {route.destination} — Rs. {route.fare.toLocaleString()}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
           {/* Passenger Info */}
           <div className="space-y-2">
@@ -230,19 +276,33 @@ export function BookingDialog({
           {selectedRoute && (
             <div className="p-4 bg-primary/5 rounded-xl space-y-2">
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Base Fare:</span>
+                <span className="text-muted-foreground">Base Fare{selectedSeats.length > 1 ? ' (per seat)' : ''}:</span>
                 <span>Rs. {fare.toLocaleString()}</span>
               </div>
               {discountAmount > 0 && (
                 <div className="flex justify-between text-sm text-green-600">
-                  <span>Discount:</span>
+                  <span>Discount{selectedSeats.length > 1 ? ' (per seat)' : ''}:</span>
                   <span>- Rs. {discountAmount.toLocaleString()}</span>
                 </div>
               )}
-              <div className="flex justify-between font-bold text-lg pt-2 border-t">
-                <span>Total:</span>
-                <span className="text-primary">Rs. {finalFare.toLocaleString()}</span>
-              </div>
+              {selectedSeats.length > 1 && (
+                <>
+                  <div className="flex justify-between text-sm pt-1 border-t">
+                    <span className="text-muted-foreground">Per Seat Total:</span>
+                    <span>Rs. {finalFare.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between font-bold text-lg pt-2 border-t">
+                    <span>Total ({selectedSeats.length} seats):</span>
+                    <span className="text-primary">Rs. {(finalFare * selectedSeats.length).toLocaleString()}</span>
+                  </div>
+                </>
+              )}
+              {selectedSeats.length <= 1 && (
+                <div className="flex justify-between font-bold text-lg pt-2 border-t">
+                  <span>Total:</span>
+                  <span className="text-primary">Rs. {finalFare.toLocaleString()}</span>
+                </div>
+              )}
             </div>
           )}
 
@@ -255,6 +315,7 @@ export function BookingDialog({
             </Button>
           </DialogFooter>
         </form>
+        )}
       </DialogContent>
     </Dialog>
   );
