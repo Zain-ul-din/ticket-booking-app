@@ -1,32 +1,32 @@
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
+import { useState, useEffect } from "react";
+import Link from "next/link";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from './ui/dialog';
-import { Button } from './ui/button';
-import { Input } from './ui/input';
-import { Label } from './ui/label';
-import { Badge } from './ui/badge';
-import { RadioGroup, RadioGroupItem } from './ui/radio-group';
+} from "./ui/dialog";
+import { Button } from "./ui/button";
+import { Input } from "./ui/input";
+import { Label } from "./ui/label";
+import { Badge } from "./ui/badge";
+import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from './ui/select';
-import { Seat, Route, BookedSeat } from '../types/booking';
-import { User, CreditCard, Users, MapPin, Percent } from 'lucide-react';
+} from "./ui/select";
+import { Seat, Route, BookedSeat } from "../types/booking";
+import { User, CreditCard, Users, MapPin, Percent } from "lucide-react";
 
 interface BookingDialogProps {
   open: boolean;
   onClose: () => void;
   seat: Seat | null;
-  onBook: (booking: Omit<BookedSeat, 'seatId'>) => void;
+  onBook: (booking: Omit<BookedSeat, "seatId">) => void;
   editMode?: boolean;
   existingBooking?: BookedSeat | null;
   availableRoutes: Route[];
@@ -43,15 +43,15 @@ export function BookingDialog({
   existingBooking = null,
   availableRoutes,
   origin,
-  selectedSeats = []
+  selectedSeats = [],
 }: BookingDialogProps) {
-  const [name, setName] = useState('');
-  const [cnic, setCnic] = useState('');
-  const [gender, setGender] = useState<'male' | 'female'>('male');
-  const [selectedRouteId, setSelectedRouteId] = useState('');
-  const [discount, setDiscount] = useState('0');
+  const [name, setName] = useState("");
+  const [cnic, setCnic] = useState("");
+  const [gender, setGender] = useState<"male" | "female">("male");
+  const [selectedRouteId, setSelectedRouteId] = useState("");
+  const [discount, setDiscount] = useState("0");
 
-  const selectedRoute = availableRoutes.find(r => r.id === selectedRouteId);
+  const selectedRoute = availableRoutes.find((r) => r.id === selectedRouteId);
   const fare = selectedRoute?.fare || 0;
   const discountAmount = parseFloat(discount) || 0;
   const finalFare = Math.max(0, fare - discountAmount);
@@ -64,16 +64,18 @@ export function BookingDialog({
       setGender(existingBooking.passenger.gender);
       setDiscount(existingBooking.discount.toString());
       // Find route by destination
-      const route = availableRoutes.find(r => r.destination === existingBooking.destination);
+      const route = availableRoutes.find(
+        (r) => r.destination === existingBooking.destination
+      );
       if (route) {
         setSelectedRouteId(route.id);
       }
     } else if (!editMode && open) {
-      setName('');
-      setCnic('');
-      setGender('male');
-      setSelectedRouteId('');
-      setDiscount('0');
+      setName("");
+      setCnic("");
+      setGender("male");
+      setSelectedRouteId("");
+      setDiscount("0");
     }
   }, [editMode, existingBooking, open, availableRoutes]);
 
@@ -86,36 +88,41 @@ export function BookingDialog({
       destination: selectedRoute.destination,
       fare: selectedRoute.fare,
       discount: discountAmount,
-      finalFare
+      finalFare,
     });
 
-    setName('');
-    setCnic('');
-    setGender('male');
-    setSelectedRouteId('');
-    setDiscount('0');
+    setName("");
+    setCnic("");
+    setGender("male");
+    setSelectedRouteId("");
+    setDiscount("0");
     onClose();
   };
 
   const formatCnic = (value: string) => {
     // Remove all non-digits
-    const digits = value.replace(/\D/g, '');
+    const digits = value.replace(/\D/g, "");
     // Format as XXXXX-XXXXXXX-X
     if (digits.length <= 5) return digits;
     if (digits.length <= 12) return `${digits.slice(0, 5)}-${digits.slice(5)}`;
-    return `${digits.slice(0, 5)}-${digits.slice(5, 12)}-${digits.slice(12, 13)}`;
+    return `${digits.slice(0, 5)}-${digits.slice(5, 12)}-${digits.slice(
+      12,
+      13
+    )}`;
   };
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-xl">
         <DialogHeader>
           <DialogTitle className="text-xl">
             {selectedSeats.length > 1 ? (
               <div className="space-y-3">
                 <div>Book {selectedSeats.length} Seats</div>
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-sm font-normal text-muted-foreground">Seats:</span>
+                  <span className="text-sm font-normal text-muted-foreground">
+                    Seats:
+                  </span>
                   {selectedSeats.map((s) => (
                     <Badge
                       key={s.id}
@@ -145,7 +152,8 @@ export function BookingDialog({
             <div className="space-y-2">
               <h3 className="text-lg font-semibold">No Routes Available</h3>
               <p className="text-sm text-muted-foreground max-w-sm mx-auto">
-                No routes have been configured from {origin}. Please add routes first to enable bookings.
+                No routes have been configured from {origin}. Please add routes
+                first to enable bookings.
               </p>
             </div>
             <div className="flex gap-3 justify-center pt-2">
@@ -153,168 +161,201 @@ export function BookingDialog({
                 Cancel
               </Button>
               <Link href="/routes">
-                <Button>
-                  Go to Routes
-                </Button>
+                <Button>Go to Routes</Button>
               </Link>
             </div>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Destination Selection */}
+          <form onSubmit={handleSubmit} className="space-y-3">
+            <div className="grid grid-cols-2 gap-2">
+              {/* Destination Selection */}
+              <div className="space-y-2">
+                <Label className="flex items-center gap-2 text-base">
+                  <MapPin className="w-4 h-4 text-muted-foreground" />
+                  Destination (from {origin})
+                </Label>
+                <Select
+                  value={selectedRouteId}
+                  onValueChange={setSelectedRouteId}
+                  required
+                >
+                  <SelectTrigger className="h-12">
+                    <SelectValue placeholder="Select destination" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableRoutes.map((route) => (
+                      <SelectItem key={route.id} value={route.id}>
+                        {route.destination} — Rs. {route.fare.toLocaleString()}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Passenger Info */}
+              <div className="space-y-2">
+                <Label
+                  htmlFor="name"
+                  className="flex items-center gap-2 text-base"
+                >
+                  <User className="w-4 h-4 text-muted-foreground" />
+                  Passenger Name
+                </Label>
+                <Input
+                  id="name"
+                  placeholder="Enter full name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="h-12 text-lg"
+                  required
+                />
+              </div>
+            </div>
+
             <div className="space-y-2">
-              <Label className="flex items-center gap-2 text-base">
-                <MapPin className="w-4 h-4 text-muted-foreground" />
-                Destination (from {origin})
+              <Label
+                htmlFor="cnic"
+                className="flex items-center gap-2 text-base"
+              >
+                <CreditCard className="w-4 h-4 text-muted-foreground" />
+                CNIC Number
               </Label>
-              <Select value={selectedRouteId} onValueChange={setSelectedRouteId} required>
-                <SelectTrigger className="h-12">
-                  <SelectValue placeholder="Select destination" />
-                </SelectTrigger>
-                <SelectContent>
-                  {availableRoutes.map((route) => (
-                    <SelectItem key={route.id} value={route.id}>
-                      {route.destination} — Rs. {route.fare.toLocaleString()}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Input
+                id="cnic"
+                placeholder="XXXXX-XXXXXXX-X"
+                value={cnic}
+                onChange={(e) => setCnic(formatCnic(e.target.value))}
+                className="h-12 text-lg font-mono"
+                maxLength={15}
+                required
+              />
             </div>
 
-          {/* Passenger Info */}
-          <div className="space-y-2">
-            <Label htmlFor="name" className="flex items-center gap-2 text-base">
-              <User className="w-4 h-4 text-muted-foreground" />
-              Passenger Name
-            </Label>
-            <Input
-              id="name"
-              placeholder="Enter full name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="h-12 text-lg"
-              required
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="cnic" className="flex items-center gap-2 text-base">
-              <CreditCard className="w-4 h-4 text-muted-foreground" />
-              CNIC Number
-            </Label>
-            <Input
-              id="cnic"
-              placeholder="XXXXX-XXXXXXX-X"
-              value={cnic}
-              onChange={(e) => setCnic(formatCnic(e.target.value))}
-              className="h-12 text-lg font-mono"
-              maxLength={15}
-              required
-            />
-          </div>
-
-          <div className="space-y-3">
-            <Label className="flex items-center gap-2 text-base">
-              <Users className="w-4 h-4 text-muted-foreground" />
-              Gender
-            </Label>
-            <RadioGroup
-              value={gender}
-              onValueChange={(v) => setGender(v as 'male' | 'female')}
-              className="flex gap-4"
-            >
-              <div className="flex-1">
-                <RadioGroupItem
-                  value="male"
-                  id="male"
-                  className="peer sr-only"
-                />
-                <Label
-                  htmlFor="male"
-                  className="flex items-center justify-center gap-2 rounded-xl border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/10 cursor-pointer transition-all"
-                >
-                  <span className="text-2xl">👨</span>
-                  <span className="font-medium">Male</span>
-                </Label>
-              </div>
-              <div className="flex-1">
-                <RadioGroupItem
-                  value="female"
-                  id="female"
-                  className="peer sr-only"
-                />
-                <Label
-                  htmlFor="female"
-                  className="flex items-center justify-center gap-2 rounded-xl border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/10 cursor-pointer transition-all"
-                >
-                  <span className="text-2xl">👩</span>
-                  <span className="font-medium">Female</span>
-                </Label>
-              </div>
-            </RadioGroup>
-          </div>
-
-          {/* Discount */}
-          <div className="space-y-2">
-            <Label htmlFor="discount" className="flex items-center gap-2 text-base">
-              <Percent className="w-4 h-4 text-muted-foreground" />
-              Discount Amount (Rs.)
-            </Label>
-            <Input
-              id="discount"
-              type="number"
-              placeholder="0"
-              value={discount}
-              onChange={(e) => setDiscount(e.target.value)}
-              className="h-12"
-              min="0"
-              max={fare}
-            />
-          </div>
-
-          {/* Fare Summary */}
-          {selectedRoute && (
-            <div className="p-4 bg-primary/5 rounded-xl space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Base Fare{selectedSeats.length > 1 ? ' (per seat)' : ''}:</span>
-                <span>Rs. {fare.toLocaleString()}</span>
-              </div>
-              {discountAmount > 0 && (
-                <div className="flex justify-between text-sm text-green-600">
-                  <span>Discount{selectedSeats.length > 1 ? ' (per seat)' : ''}:</span>
-                  <span>- Rs. {discountAmount.toLocaleString()}</span>
+            <div className="space-y-3">
+              <Label className="flex items-center gap-2 text-base">
+                <Users className="w-4 h-4 text-muted-foreground" />
+                Gender
+              </Label>
+              <RadioGroup
+                value={gender}
+                onValueChange={(v) => setGender(v as "male" | "female")}
+                className="flex gap-4"
+              >
+                <div className="flex-1">
+                  <RadioGroupItem
+                    value="male"
+                    id="male"
+                    className="peer sr-only"
+                  />
+                  <Label
+                    htmlFor="male"
+                    className="flex items-center justify-center gap-2 rounded-xl border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/10 cursor-pointer transition-all"
+                  >
+                    <span className="text-xl">👨</span>
+                    <span className="font-medium">Male</span>
+                  </Label>
                 </div>
-              )}
-              {selectedSeats.length > 1 && (
-                <>
-                  <div className="flex justify-between text-sm pt-1 border-t">
-                    <span className="text-muted-foreground">Per Seat Total:</span>
-                    <span>Rs. {finalFare.toLocaleString()}</span>
+                <div className="flex-1">
+                  <RadioGroupItem
+                    value="female"
+                    id="female"
+                    className="peer sr-only"
+                  />
+                  <Label
+                    htmlFor="female"
+                    className="flex items-center justify-center gap-2 rounded-xl border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/10 cursor-pointer transition-all"
+                  >
+                    <span className="text-xl">👩</span>
+                    <span className="font-medium">Female</span>
+                  </Label>
+                </div>
+              </RadioGroup>
+            </div>
+
+            {/* Fare Summary */}
+            {selectedRoute && (
+              <div className="p-4 bg-primary/5 rounded-xl space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">
+                    Base Fare{selectedSeats.length > 1 ? " (per seat)" : ""}:
+                  </span>
+                  <span>Rs. {fare.toLocaleString()}</span>
+                </div>
+                {discountAmount > 0 && (
+                  <div className="flex justify-between text-sm text-green-600">
+                    <span>
+                      Discount{selectedSeats.length > 1 ? " (per seat)" : ""}:
+                    </span>
+                    <span>- Rs. {discountAmount.toLocaleString()}</span>
                   </div>
+                )}
+                {selectedSeats.length > 1 && (
+                  <>
+                    <div className="flex justify-between text-sm pt-1 border-t">
+                      <span className="text-muted-foreground">
+                        Per Seat Total:
+                      </span>
+                      <span>Rs. {finalFare.toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between font-bold text-lg pt-2 border-t">
+                      <span>Total ({selectedSeats.length} seats):</span>
+                      <span className="text-primary">
+                        Rs.{" "}
+                        {(finalFare * selectedSeats.length).toLocaleString()}
+                      </span>
+                    </div>
+                  </>
+                )}
+                {selectedSeats.length <= 1 && (
                   <div className="flex justify-between font-bold text-lg pt-2 border-t">
-                    <span>Total ({selectedSeats.length} seats):</span>
-                    <span className="text-primary">Rs. {(finalFare * selectedSeats.length).toLocaleString()}</span>
+                    <span>Total:</span>
+                    <span className="text-primary">
+                      Rs. {finalFare.toLocaleString()}
+                    </span>
                   </div>
-                </>
-              )}
-              {selectedSeats.length <= 1 && (
-                <div className="flex justify-between font-bold text-lg pt-2 border-t">
-                  <span>Total:</span>
-                  <span className="text-primary">Rs. {finalFare.toLocaleString()}</span>
-                </div>
-              )}
-            </div>
-          )}
+                )}
+              </div>
+            )}
 
-          <DialogFooter className="gap-2 sm:gap-0">
-            <Button type="button" variant="outline" onClick={onClose} className="h-12">
-              Cancel
-            </Button>
-            <Button type="submit" className="h-12 px-8" disabled={!selectedRoute}>
-              {editMode ? 'Save Changes' : 'Confirm Booking'}
-            </Button>
-          </DialogFooter>
-        </form>
+            {/* Discount */}
+            <div className="space-y-2">
+              <Label
+                htmlFor="discount"
+                className="flex items-center gap-2 text-base"
+              >
+                <Percent className="w-4 h-4 text-muted-foreground" />
+                Discount Amount (Rs.)
+              </Label>
+              <Input
+                id="discount"
+                type="number"
+                placeholder="0"
+                value={discount}
+                onChange={(e) => setDiscount(e.target.value)}
+                className="h-12"
+                min="0"
+                max={fare}
+              />
+            </div>
+
+            <DialogFooter className="gap-2 sm:gap-0">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onClose}
+                className="h-12"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                className="h-12 px-8"
+                disabled={!selectedRoute}
+              >
+                {editMode ? "Save Changes" : "Confirm Booking"}
+              </Button>
+            </DialogFooter>
+          </form>
         )}
       </DialogContent>
     </Dialog>

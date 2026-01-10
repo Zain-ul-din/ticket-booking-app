@@ -50,27 +50,7 @@ function divider() {
 
 // ---------- TICKET PRINT FUNCTION ----------
 function printTicket(data = null) {
-  const initialData = {
-    company: "MIAN TRAVELS",
-    route: { from: "LAHORE", to: "ISLAMABAD" },
-    departure: "10 Jan 2026 | 09:30 AM",
-    vehicleNumber: "ABC-1234",
-    seatNumber: "12A",
-    passenger: {
-      name: "Ali Khan",
-      phone: "0301-1234567",
-      cnic: "35202-123XXXX-1",
-      gender: "Male",
-    },
-    fare: {
-      price: "1500 PKR",
-      discount: "-200 PKR",
-      total: "1300 PKR",
-    },
-  };
-
-  // Use dummy data if none provided
-  const ticket = data ? { ...data, ...initialData } : initialData;
+  const ticket = data;
 
   const device = new escpos.USB(); // auto-detect printer
   const printer = new escpos.Printer(device);
@@ -84,7 +64,9 @@ function printTicket(data = null) {
   device.open(() => {
     line();
     printer.size(0, 0);
+    printer.style("B");
     printer.text(ticket.company);
+    printer.style("NORMAL");
     line();
 
     printer.text("");
@@ -95,7 +77,13 @@ function printTicket(data = null) {
 
     printer.size(1, 1);
     printer.text("Veh NO: " + ticket.vehicleNumber);
-    printer.text("Seat NO: " + ticket.seatNumber);
+
+    const seats = ticket.seats;
+    for (let i = 0; i < seats.length; i += 3) {
+      printer.text(
+        i == 0 ? "Seat NO: " : "" + seats.slice(i, i + 3).join(", ")
+      );
+    }
     printer.style("NORMAL");
 
     printer.size(0, 0);
@@ -116,39 +104,30 @@ function printTicket(data = null) {
 
     printer.text(lineLR("Fare:", ticket.fare.price));
     printer.text(lineLR("Discount:", ticket.fare.discount));
+    printer.text(lineLR("Quantity:", ticket.fare.price));
     printer.style("b");
     printer.text(lineLR("Total Payable:", ticket.fare.total));
     printer.style("normal");
 
-    // // 🏢 Company Name - big + centered
-    // printer.style("b"); // bold
-    // bigCompanyName(ticket.company).forEach((line) => printer.text(line));
-    // printer.style("normal");
-    // printer.text(divider());
+    // note
 
-    // // 🚌 Route
-    // printer.style("b");
-    // printer.text(center(`${ticket.route.from}  →  ${ticket.route.to}`));
-    // printer.style("normal");
+    // ---------- NOTES ----------
+    printer.text("");
+    printer.size(0, 0);
+    printer.align("CT");
+    printer.style("NORMAL");
 
-    // // ⏰ Departure
+    const noteText =
+      "Note: Passengers are responsible for their own luggage. The company is not liable for any loss or damage.";
 
-    // // 🚐 Vehicle Number & Seat Number
-    // printer.text(
-    //   center(`Vehicle No: ${ticket.vehicleNumber} | Seat: ${ticket.seatNumber}`)
-    // );
-    // printer.text(divider());
+    wrapText(noteText).forEach((line) => {
+      printer.text(lineLR(line, ""));
+    });
 
-    // // 👤 Passenger Info
-    // printer.text("Passenger Details");
-    // printer.text(divider());
-    // printer.text(lineLR("Name:", ticket.passenger.name));
-    // printer.text(lineLR("Phone:", ticket.passenger.phone));
-    // printer.text(lineLR("CNIC:", ticket.passenger.cnic));
-    // printer.text(lineLR("Gender:", ticket.passenger.gender));
-    // printer.text(divider());
-
-    // // 💰 Fare
+    // Number
+    printer.text("");
+    printer.text(lineLR("Booking: 0301-1234567", "Helpline: 042-12345678"));
+    printer.style("NORMAL");
 
     // // Feed & cut
     printer.feed(4);

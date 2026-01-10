@@ -1,167 +1,90 @@
 import Link from "next/link";
+import { useRouter } from "next/router";
+import { Button } from "../components/ui/button";
+import { VoucherCard } from "../components/VoucherCard";
 import { useBooking } from "../contexts/BookingContext";
-import { Bus, FileText, Ticket, ChevronRight, Route } from "lucide-react";
-import { formatDate } from "../utils/dateUtils";
+import { Plus, FileText, Settings } from "lucide-react";
+import { formatDateFull } from "../utils/dateUtils";
 
 export default function Home() {
-  const { vehicles, vouchers, routes, getVehicleById } = useBooking();
+  const router = useRouter();
+  const { vouchers, vehicles, removeVoucher, getVehicleById } = useBooking();
 
-  // Get today's vouchers
-  const today = new Date().toISOString().split("T")[0];
-  const todayVouchers = vouchers.filter((v) => v.date === today);
+  // Group vouchers by date
+  const groupedVouchers = vouchers.reduce((acc, voucher) => {
+    const date = voucher.date;
+    if (!acc[date]) acc[date] = [];
+    acc[date].push(voucher);
+    return acc;
+  }, {} as Record<string, typeof vouchers>);
 
-  // Get total bookings for today
-  const totalBookingsToday = todayVouchers.reduce(
-    (acc, v) => acc + v.bookedSeats.length,
-    0
+  const sortedDates = Object.keys(groupedVouchers).sort(
+    (a, b) => new Date(b).getTime() - new Date(a).getTime()
   );
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="bg-gradient-to-br from-primary/10 via-background to-background border-b">
-        <div className="container max-w-4xl mx-auto px-4 py-8">
-          <div className="flex items-center gap-4 mb-2">
-            <div className="w-14 h-14 rounded-2xl bg-primary flex items-center justify-center">
-              <Bus className="w-7 h-7 text-primary-foreground" />
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold">Booking Manager</h1>
-              <p className="text-muted-foreground">
-                Manage your vehicles and seat bookings
-              </p>
-            </div>
+      <header className="border-b bg-card sticky top-0 z-10">
+        <div className="container max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <h1 className="text-2xl font-bold">Daily Vouchers</h1>
           </div>
+
+          <Link href={"/manage"} className="ml-auto">
+            <Button variant={"outline"}>
+              <Settings /> Manage
+            </Button>
+          </Link>
         </div>
       </header>
 
       <main className="container max-w-4xl mx-auto px-4 py-8">
-        {/* Quick Stats */}
-        <div className="grid grid-cols-4 gap-4 mb-8">
-          <div className="section-card text-center">
-            <div className="text-3xl font-bold text-primary">
-              {vehicles.length}
+        {vehicles.length === 0 ? (
+          <div className="text-center py-16">
+            <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-muted flex items-center justify-center">
+              <FileText className="w-8 h-8 text-muted-foreground" />
             </div>
-            <div className="text-sm text-muted-foreground">Vehicles</div>
-          </div>
-          <div className="section-card text-center">
-            <div className="text-3xl font-bold text-primary">
-              {routes.length}
-            </div>
-            <div className="text-sm text-muted-foreground">Routes</div>
-          </div>
-          <div className="section-card text-center">
-            <div className="text-3xl font-bold text-primary">
-              {todayVouchers.length}
-            </div>
-            <div className="text-sm text-muted-foreground">
-              {`Today's`} Trips
-            </div>
-          </div>
-          <div className="section-card text-center">
-            <div className="text-3xl font-bold text-primary">
-              {totalBookingsToday}
-            </div>
-            <div className="text-sm text-muted-foreground">Bookings Today</div>
-          </div>
-        </div>
-
-        {/* Main Navigation */}
-        <div className="grid gap-4 md:grid-cols-2 mb-8">
-          <Link href="/vehicles" className="nav-button">
-            <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center">
-              <Bus className="w-8 h-8 text-primary" />
-            </div>
-            <div className="text-center">
-              <h2 className="text-xl font-semibold">Vehicles</h2>
-              <p className="text-sm text-muted-foreground">Manage fleet</p>
-            </div>
-            <ChevronRight className="w-5 h-5 text-muted-foreground" />
-          </Link>
-
-          <Link href="/routes" className="nav-button">
-            <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center">
-              <Route className="w-8 h-8 text-primary" />
-            </div>
-            <div className="text-center">
-              <h2 className="text-xl font-semibold">Routes & Fares</h2>
-              <p className="text-sm text-muted-foreground">Set prices</p>
-            </div>
-            <ChevronRight className="w-5 h-5 text-muted-foreground" />
-          </Link>
-
-          <Link href="/vouchers" className="nav-button">
-            <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center">
-              <FileText className="w-8 h-8 text-primary" />
-            </div>
-            <div className="text-center">
-              <h2 className="text-xl font-semibold">Vouchers</h2>
-              <p className="text-sm text-muted-foreground">Create trips</p>
-            </div>
-            <ChevronRight className="w-5 h-5 text-muted-foreground" />
-          </Link>
-        </div>
-
-        {/* Today's Trips */}
-        {todayVouchers.length > 0 && (
-          <div className="section-card">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold">{`Today's`} Trips</h2>
-              <span className="text-sm text-muted-foreground">
-                {formatDate(new Date())}
-              </span>
-            </div>
-            <div className="space-y-3">
-              {todayVouchers.map((voucher) => {
-                const vehicle = getVehicleById(voucher.vehicleId);
-                const bookedCount = voucher.bookedSeats.length;
-                const totalSeats = vehicle?.totalSeats || 0;
-
-                return (
-                  <Link
-                    key={voucher.id}
-                    href={`/booking/${voucher.id}`}
-                    className="flex items-center gap-4 p-4 rounded-xl bg-muted/30 hover:bg-muted/50 transition-colors"
-                  >
-                    <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-                      <Ticket className="w-6 h-6 text-primary" />
-                    </div>
-                    <div className="flex-1">
-                      <div className="font-medium">From: {voucher.origin}</div>
-                      <div className="text-sm text-muted-foreground">
-                        {voucher.departureTime} • {vehicle?.name}
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="font-semibold text-primary">
-                        {bookedCount}/{totalSeats}
-                      </div>
-                      <div className="text-xs text-muted-foreground">seats</div>
-                    </div>
-                    <ChevronRight className="w-5 h-5 text-muted-foreground" />
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* Empty State for Today */}
-        {todayVouchers.length === 0 && vouchers.length > 0 && (
-          <div className="section-card text-center py-8">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center">
-              <Ticket className="w-8 h-8 text-muted-foreground" />
-            </div>
-            <h3 className="font-semibold mb-1">No Trips Today</h3>
-            <p className="text-sm text-muted-foreground mb-4">
-              Create a new voucher to start booking seats
+            <h2 className="text-xl font-semibold mb-2">Add Vehicles First</h2>
+            <p className="text-muted-foreground mb-6">
+              You need to add vehicles before creating vouchers
             </p>
-            <Link
-              href="/vouchers"
-              className="text-primary font-medium hover:underline"
-            >
-              Go to Vouchers →
+            <Link href="/vehicles">
+              <Button size="lg" className="gap-2">
+                <Plus className="w-4 h-4" />
+                Go to Vehicles
+              </Button>
             </Link>
+          </div>
+        ) : vouchers.length === 0 ? (
+          <div className="text-center py-16">
+            <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-muted flex items-center justify-center">
+              <FileText className="w-8 h-8 text-muted-foreground" />
+            </div>
+            <h2 className="text-xl font-semibold mb-2">No Vouchers Yet</h2>
+            <p className="text-muted-foreground mb-6">
+              Create your first daily voucher to start booking seats
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-8">
+            {sortedDates.map((date) => (
+              <div key={date}>
+                <h2 className="text-lg font-semibold text-muted-foreground mb-4">
+                  {formatDateFull(new Date(date))}
+                </h2>
+                <div className="grid gap-4">
+                  {groupedVouchers[date].map((voucher) => (
+                    <VoucherCard
+                      key={voucher.id}
+                      voucher={voucher}
+                      vehicle={getVehicleById(voucher.vehicleId)}
+                      onDelete={() => removeVoucher(voucher.id)}
+                      onClick={() => router.push(`/booking/${voucher.id}`)}
+                    />
+                  ))}
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </main>

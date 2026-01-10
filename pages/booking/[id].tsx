@@ -15,27 +15,48 @@ import { DepartureSummaryDialog } from "../../components/DepartureSummaryDialog"
 import { useBooking } from "../../contexts/BookingContext";
 import { getVoucherStatus, canEditVoucher } from "../../utils/voucherUtils";
 import { Seat, Passenger, BookedSeat } from "../../types/booking";
-import { ArrowLeft, Printer, MapPin, Clock, User, Phone, Bus, Car } from "lucide-react";
+import {
+  ArrowLeft,
+  Printer,
+  MapPin,
+  Clock,
+  User,
+  Phone,
+  Bus,
+  Car,
+  Search,
+} from "lucide-react";
 import { formatDate } from "../../utils/dateUtils";
 
 export default function BookingPage() {
   const router = useRouter();
   const { id } = router.query;
-  const { getVoucherById, getVehicleById, updateVoucher, routes, getRoutesByOrigin } = useBooking();
+  const {
+    getVoucherById,
+    getVehicleById,
+    updateVoucher,
+    routes,
+    getRoutesByOrigin,
+  } = useBooking();
 
   const voucher = id ? getVoucherById(id as string) : null;
   const vehicle = voucher ? getVehicleById(voucher.vehicleId) : null;
 
   // Filter routes by origin AND vehicle type
-  const availableRoutes = voucher && vehicle
-    ? getRoutesByOrigin(voucher.origin).filter(route => route.vehicleType === vehicle.type)
-    : [];
+  const availableRoutes =
+    voucher && vehicle
+      ? getRoutesByOrigin(voucher.origin).filter(
+          (route) => route.vehicleType === vehicle.type
+        )
+      : [];
 
   // Booking state
   const [selectedSeat, setSelectedSeat] = useState<Seat | null>(null);
   const [showBookingDialog, setShowBookingDialog] = useState(false);
   const [editMode, setEditMode] = useState(false);
-  const [selectedBooking, setSelectedBooking] = useState<BookedSeat | null>(null);
+  const [selectedBooking, setSelectedBooking] = useState<BookedSeat | null>(
+    null
+  );
   const [showCancelDialog, setShowCancelDialog] = useState(false);
 
   // Multi-seat selection state
@@ -53,7 +74,9 @@ export default function BookingPage() {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-xl font-semibold mb-2">Voucher Not Found</h2>
-          <p className="text-muted-foreground mb-4">This voucher may have been deleted</p>
+          <p className="text-muted-foreground mb-4">
+            This voucher may have been deleted
+          </p>
           <Link href="/vouchers">
             <Button>Go to Vouchers</Button>
           </Link>
@@ -62,7 +85,7 @@ export default function BookingPage() {
     );
   }
 
-  const Icon = vehicle.type === 'bus' ? Bus : Car;
+  const Icon = vehicle.type === "bus" ? Bus : Car;
   const bookedCount = voucher.bookedSeats.length;
 
   const handleSeatClick = (seat: Seat) => {
@@ -70,7 +93,9 @@ export default function BookingPage() {
     if (!canEdit) return;
 
     // Check if already booked
-    const existingBooking = voucher.bookedSeats.find(bs => bs.seatId === seat.id);
+    const existingBooking = voucher.bookedSeats.find(
+      (bs) => bs.seatId === seat.id
+    );
 
     if (existingBooking) {
       // Show cancel dialog for booked seats
@@ -80,10 +105,10 @@ export default function BookingPage() {
     }
 
     // Toggle seat selection
-    setSelectedSeats(prev => {
-      const isSelected = prev.some(s => s.id === seat.id);
+    setSelectedSeats((prev) => {
+      const isSelected = prev.some((s) => s.id === seat.id);
       if (isSelected) {
-        return prev.filter(s => s.id !== seat.id);
+        return prev.filter((s) => s.id !== seat.id);
       } else {
         return [...prev, seat];
       }
@@ -110,16 +135,16 @@ export default function BookingPage() {
   const handleBulkBook = (destination: string, fare: number) => {
     // TODO: Add passenger details collection
     // For now, just create bookings with placeholder data
-    const newBookings = selectedSeats.map(seat => ({
+    const newBookings = selectedSeats.map((seat) => ({
       seatId: seat.id,
       destination,
       fare,
       discount: 0,
       finalFare: fare,
       passenger: {
-        name: 'Passenger ' + seat.id, // Placeholder
-        cnic: '00000-0000000-0', // Placeholder
-        gender: 'male' as const,
+        name: "Passenger " + seat.id, // Placeholder
+        cnic: "00000-0000000-0", // Placeholder
+        gender: "male" as const,
       },
     }));
 
@@ -131,38 +156,33 @@ export default function BookingPage() {
     setSelectedSeats([]);
   };
 
-  const handleBookSeat = (booking: Omit<BookedSeat, 'seatId'>) => {
+  const handleBookSeat = (booking: Omit<BookedSeat, "seatId">) => {
     if (editMode && selectedBooking) {
       // Update existing booking
       updateVoucher(voucher.id, {
-        bookedSeats: voucher.bookedSeats.map(bs =>
-          bs.seatId === selectedBooking.seatId
-            ? { ...bs, ...booking }
-            : bs
-        )
+        bookedSeats: voucher.bookedSeats.map((bs) =>
+          bs.seatId === selectedBooking.seatId ? { ...bs, ...booking } : bs
+        ),
       });
       setEditMode(false);
       setSelectedBooking(null);
     } else if (selectedSeats.length > 0) {
       // Multiple seats: apply same details to all
-      const newBookings = selectedSeats.map(seat => ({
+      const newBookings = selectedSeats.map((seat) => ({
         seatId: seat.id,
-        ...booking
+        ...booking,
       }));
 
       updateVoucher(voucher.id, {
-        bookedSeats: [
-          ...voucher.bookedSeats,
-          ...newBookings
-        ]
+        bookedSeats: [...voucher.bookedSeats, ...newBookings],
       });
     } else if (selectedSeat) {
       // Single seat (fallback)
       updateVoucher(voucher.id, {
         bookedSeats: [
           ...voucher.bookedSeats,
-          { seatId: selectedSeat.id, ...booking }
-        ]
+          { seatId: selectedSeat.id, ...booking },
+        ],
       });
     }
     setShowBookingDialog(false);
@@ -175,8 +195,8 @@ export default function BookingPage() {
 
     updateVoucher(voucher.id, {
       bookedSeats: voucher.bookedSeats.filter(
-        bs => bs.seatId !== selectedBooking.seatId
-      )
+        (bs) => bs.seatId !== selectedBooking.seatId
+      ),
     });
     setShowCancelDialog(false);
     setSelectedBooking(null);
@@ -185,7 +205,7 @@ export default function BookingPage() {
   const handleEditBooking = () => {
     if (!selectedBooking) return;
 
-    const seat = vehicle.seats.find(s => s.id === selectedBooking.seatId);
+    const seat = vehicle.seats.find((s) => s.id === selectedBooking.seatId);
     if (seat) {
       setSelectedSeat(seat);
       setEditMode(true);
@@ -194,29 +214,25 @@ export default function BookingPage() {
     }
   };
 
-  const handlePrint = () => {
-    window.print();
-  };
-
   const handleMarkDeparted = () => {
     setShowDepartureDialog(true);
   };
 
   const handleConfirmDeparture = (terminalTax: number, cargo: number) => {
     updateVoucher(voucher.id, {
-      status: 'departed',
+      status: "departed",
       terminalTax,
       cargo,
-      departedAt: new Date().toISOString()
+      departedAt: new Date().toISOString(),
     });
     setShowDepartureDialog(false);
   };
 
   const handleMarkClosed = () => {
-    if (confirm('Mark this voucher as closed? This action cannot be undone.')) {
+    if (confirm("Mark this voucher as closed? This action cannot be undone.")) {
       updateVoucher(voucher.id, {
-        status: 'closed',
-        closedAt: new Date().toISOString()
+        status: "closed",
+        closedAt: new Date().toISOString(),
       });
     }
   };
@@ -241,14 +257,15 @@ export default function BookingPage() {
               </p>
             </div>
           </div>
-          <Button onClick={handlePrint} variant="outline" className="gap-2">
-            <Printer className="w-4 h-4" />
-            Print
+
+          <Button onClick={() => {}} variant="outline" className="gap-2">
+            <Search className="w-4 h-4" />
+            Search
           </Button>
         </div>
       </header>
 
-      <main className="container max-w-5xl mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 py-8">
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Sidebar - Voucher Info */}
           <div className="lg:col-span-1 space-y-6">
@@ -315,7 +332,11 @@ export default function BookingPage() {
                     <span className="text-sm text-muted-foreground">
                       Booking Status
                     </span>
-                    <Badge variant={bookedCount === totalSeats ? 'default' : 'secondary'}>
+                    <Badge
+                      variant={
+                        bookedCount === totalSeats ? "default" : "secondary"
+                      }
+                    >
                       {bookedCount}/{totalSeats} Seats
                     </Badge>
                   </div>
@@ -323,7 +344,10 @@ export default function BookingPage() {
                     <span className="text-sm text-muted-foreground">
                       Voucher Status
                     </span>
-                    <VoucherStateBadge status={getVoucherStatus(voucher)} size="md" />
+                    <VoucherStateBadge
+                      status={getVoucherStatus(voucher)}
+                      size="md"
+                    />
                   </div>
                 </div>
               </CardContent>
@@ -341,7 +365,8 @@ export default function BookingPage() {
             {!canEdit && (
               <div className="p-4 bg-orange-50 dark:bg-orange-950/30 border border-orange-200 dark:border-orange-800 rounded-lg">
                 <p className="text-sm text-orange-900 dark:text-orange-100 font-medium">
-                  This voucher has {getVoucherStatus(voucher)}. Bookings cannot be modified.
+                  This voucher has {getVoucherStatus(voucher)}. Bookings cannot
+                  be modified.
                 </p>
               </div>
             )}
@@ -378,12 +403,15 @@ export default function BookingPage() {
                             <div className="flex items-center gap-2 text-xs">
                               <MapPin className="w-3 h-3 text-muted-foreground" />
                               <span className="text-muted-foreground">To:</span>
-                              <span className="font-medium">{booking.destination}</span>
+                              <span className="font-medium">
+                                {booking.destination}
+                              </span>
                             </div>
                             <div className="flex items-center justify-between text-xs">
                               <span className="text-muted-foreground">
                                 Fare: Rs. {booking.fare.toLocaleString()}
-                                {booking.discount > 0 && ` - ${booking.discount.toLocaleString()}`}
+                                {booking.discount > 0 &&
+                                  ` - ${booking.discount.toLocaleString()}`}
                               </span>
                               <span className="font-semibold text-primary">
                                 Rs. {booking.finalFare.toLocaleString()}
@@ -408,7 +436,8 @@ export default function BookingPage() {
                     Select Seats to Book
                   </h2>
                   <p className="text-sm text-muted-foreground text-center mt-2">
-                    Click on seats to select them. Selected seats will appear in the tray below.
+                    Click on seats to select them. Selected seats will appear in
+                    the tray below.
                   </p>
                 </div>
                 <div className="flex justify-center">
@@ -446,7 +475,7 @@ export default function BookingPage() {
         editMode={editMode}
         existingBooking={selectedBooking}
         availableRoutes={availableRoutes}
-        origin={voucher?.origin || ''}
+        origin={voucher?.origin || ""}
         selectedSeats={selectedSeats}
       />
 
@@ -468,7 +497,7 @@ export default function BookingPage() {
         onClose={handleCancelBulkBooking}
         seats={selectedSeats}
         availableRoutes={availableRoutes}
-        origin={voucher?.origin || ''}
+        origin={voucher?.origin || ""}
         onBook={handleBulkBook}
       />
 

@@ -1,11 +1,11 @@
-import { useState } from 'react';
-import { Seat, Route } from '../types/booking';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
-import { Button } from './ui/button';
-import { Badge } from './ui/badge';
-import { CityCombobox } from './CityCombobox';
-import { Label } from './ui/label';
-import { X } from 'lucide-react';
+import { useState } from "react";
+import { Seat, Route } from "../types/booking";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
+import { Button } from "./ui/button";
+import { Badge } from "./ui/badge";
+import { CityCombobox } from "./CityCombobox";
+import { Label } from "./ui/label";
+import { X } from "lucide-react";
 
 interface BulkBookingDialogProps {
   open: boolean;
@@ -24,18 +24,18 @@ export function BulkBookingDialog({
   origin,
   onBook,
 }: BulkBookingDialogProps) {
-  const [destination, setDestination] = useState('');
+  const [destination, setDestination] = useState("");
   const [selectedRoute, setSelectedRoute] = useState<Route | null>(null);
 
   const handleDestinationChange = (value: string) => {
     setDestination(value);
-    const route = availableRoutes.find(r => r.destination === value);
+    const route = availableRoutes.find((r) => r.destination === value);
     setSelectedRoute(route || null);
   };
 
   const handleNext = () => {
     if (!destination || !selectedRoute) {
-      alert('Please select a destination');
+      alert("Please select a destination");
       return;
     }
 
@@ -45,7 +45,7 @@ export function BulkBookingDialog({
   };
 
   const handleClose = () => {
-    setDestination('');
+    setDestination("");
     setSelectedRoute(null);
     onClose();
   };
@@ -54,7 +54,9 @@ export function BulkBookingDialog({
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle className="text-2xl">Bulk Booking - {seats.length} Seats</DialogTitle>
+          <DialogTitle className="text-2xl">
+            Bulk Booking - {seats.length} Seats
+          </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-6">
@@ -83,9 +85,7 @@ export function BulkBookingDialog({
               onValueChange={handleDestinationChange}
               placeholder="Select destination city"
             />
-            <p className="text-xs text-muted-foreground">
-              From: {origin}
-            </p>
+            <p className="text-xs text-muted-foreground">From: {origin}</p>
           </div>
 
           {/* Fare Display */}
@@ -98,7 +98,9 @@ export function BulkBookingDialog({
                 </span>
               </div>
               <div className="flex items-center justify-between mt-2 pt-2 border-t">
-                <span className="text-sm font-medium">Total ({seats.length} seats):</span>
+                <span className="text-sm font-medium">
+                  Total ({seats.length} seats):
+                </span>
                 <span className="text-2xl font-bold text-primary">
                   Rs. {(selectedRoute.fare * seats.length).toLocaleString()}
                 </span>
@@ -111,14 +113,17 @@ export function BulkBookingDialog({
             <Button variant="outline" onClick={handleClose}>
               Cancel
             </Button>
-            <Button onClick={handleNext} disabled={!destination || !selectedRoute}>
+            <Button
+              onClick={handleNext}
+              disabled={!destination || !selectedRoute}
+            >
               Next: Enter Passenger Details →
             </Button>
           </div>
 
           {/* Note */}
           <p className="text-xs text-muted-foreground text-center">
-            Note: You'll enter individual passenger details in the next step
+            Note: {`You'll`} enter individual passenger details in the next step
           </p>
         </div>
       </DialogContent>

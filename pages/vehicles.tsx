@@ -1,10 +1,10 @@
-import { useState } from 'react';
-import Link from 'next/link';
-import { Button } from '../components/ui/button';
-import { VehicleCard } from '../components/VehicleCard';
-import { AddVehicleDialog } from '../components/AddVehicleDialog';
-import { useBooking } from '../contexts/BookingContext';
-import { Plus, ArrowLeft } from 'lucide-react';
+import { useState } from "react";
+import Link from "next/link";
+import { Button } from "../components/ui/button";
+import { VehicleCard } from "../components/VehicleCard";
+import { AddVehicleDialog } from "../components/AddVehicleDialog";
+import { useBooking } from "../contexts/BookingContext";
+import { Plus, ArrowLeft } from "lucide-react";
 
 export default function VehiclesPage() {
   const { vehicles, addVehicle, removeVehicle } = useBooking();
@@ -16,7 +16,7 @@ export default function VehiclesPage() {
       <header className="border-b bg-card sticky top-0 z-10">
         <div className="container max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Link href="/">
+            <Link href="/manage">
               <Button variant="ghost" size="icon">
                 <ArrowLeft className="w-5 h-5" />
               </Button>
@@ -37,8 +37,14 @@ export default function VehiclesPage() {
               <Plus className="w-8 h-8 text-muted-foreground" />
             </div>
             <h2 className="text-xl font-semibold mb-2">No Vehicles Yet</h2>
-            <p className="text-muted-foreground mb-6">Add your first vehicle to get started</p>
-            <Button onClick={() => setShowAddDialog(true)} size="lg" className="gap-2">
+            <p className="text-muted-foreground mb-6">
+              Add your first vehicle to get started
+            </p>
+            <Button
+              onClick={() => setShowAddDialog(true)}
+              size="lg"
+              className="gap-2"
+            >
               <Plus className="w-4 h-4" />
               Add Your First Vehicle
             </Button>
@@ -50,9 +56,11 @@ export default function VehiclesPage() {
                 key={vehicle.id}
                 vehicle={vehicle}
                 onDelete={() => removeVehicle(vehicle.id)}
-                onClick={() => setExpandedVehicle(
-                  expandedVehicle === vehicle.id ? null : vehicle.id
-                )}
+                onClick={() =>
+                  setExpandedVehicle(
+                    expandedVehicle === vehicle.id ? null : vehicle.id
+                  )
+                }
                 showSeats={expandedVehicle === vehicle.id}
               />
             ))}

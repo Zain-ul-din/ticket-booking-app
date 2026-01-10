@@ -1,7 +1,7 @@
-import { Seat } from '../types/booking';
-import { Button } from './ui/button';
-import { Badge } from './ui/badge';
-import { X, ArrowRight } from 'lucide-react';
+import { Seat } from "../types/booking";
+import { Button } from "./ui/button";
+import { Badge } from "./ui/badge";
+import { X, ArrowRight } from "lucide-react";
 
 interface SelectedSeatsTrayProps {
   selectedSeats: Seat[];
@@ -23,8 +23,8 @@ export function SelectedSeatsTray({
     <div
       className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t-2 border-primary shadow-2xl print:hidden"
       style={{
-        transform: isVisible ? 'translateY(0)' : 'translateY(100%)',
-        transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        transform: isVisible ? "translateY(0)" : "translateY(100%)",
+        transition: "transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
       }}
     >
       <div className="container max-w-5xl mx-auto px-4 py-4">
@@ -50,19 +50,19 @@ export function SelectedSeatsTray({
               )}
             </div>
             <Button
-              variant="ghost"
-              size="sm"
+              variant="outline"
+              size="default"
               onClick={onClearAll}
               className="gap-1 text-muted-foreground hover:text-destructive"
             >
               <X className="w-4 h-4" />
-              Clear
+              Cancel
             </Button>
           </div>
 
           {/* Right: Book button */}
           <Button onClick={onBook} size="lg" className="gap-2 shadow-lg">
-            Book {count} {count === 1 ? 'Seat' : 'Seats'}
+            Book {count} {count === 1 ? "Seat" : "Seats"}
             <ArrowRight className="w-5 h-5" />
           </Button>
         </div>

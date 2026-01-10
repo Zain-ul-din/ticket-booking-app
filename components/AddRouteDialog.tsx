@@ -1,26 +1,26 @@
-import { useState } from 'react';
+import { useState } from "react";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from './ui/dialog';
-import { Button } from './ui/button';
-import { Input } from './ui/input';
-import { Label } from './ui/label';
+} from "./ui/dialog";
+import { Button } from "./ui/button";
+import { Input } from "./ui/input";
+import { Label } from "./ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from './ui/select';
-import { useBooking } from '../contexts/BookingContext';
-import { useTerminal } from '../contexts/TerminalContext';
-import { CityCombobox } from './CityCombobox';
-import { VehicleType } from '../types/booking';
-import { MapPin, DollarSign, Bus, Car } from 'lucide-react';
+} from "./ui/select";
+import { useBooking } from "../contexts/BookingContext";
+import { useTerminal } from "../contexts/TerminalContext";
+import { CityCombobox } from "./CityCombobox";
+import { VehicleType } from "../types/booking";
+import { MapPin, DollarSign, Bus, Car } from "lucide-react";
 
 interface AddRouteDialogProps {
   open: boolean;
@@ -30,11 +30,11 @@ interface AddRouteDialogProps {
 export function AddRouteDialog({ open, onClose }: AddRouteDialogProps) {
   const { addRoute } = useBooking();
   const { terminalInfo } = useTerminal();
-  const [destination, setDestination] = useState('');
-  const [vehicleType, setVehicleType] = useState<VehicleType | ''>('');
-  const [fare, setFare] = useState('');
+  const [destination, setDestination] = useState("");
+  const [vehicleType, setVehicleType] = useState<VehicleType | "">("");
+  const [fare, setFare] = useState("");
 
-  const origin = terminalInfo?.city || '';
+  const origin = terminalInfo?.city || "";
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,9 +52,9 @@ export function AddRouteDialog({ open, onClose }: AddRouteDialogProps) {
   };
 
   const resetForm = () => {
-    setDestination('');
-    setVehicleType('');
-    setFare('');
+    setDestination("");
+    setVehicleType("");
+    setFare("");
   };
 
   return (
@@ -72,7 +72,9 @@ export function AddRouteDialog({ open, onClose }: AddRouteDialogProps) {
               Origin (Your Terminal)
             </Label>
             <div className="h-12 px-3 py-2 rounded-md border border-input bg-muted/30 flex items-center">
-              <span className="font-medium text-foreground">{origin || 'Not set'}</span>
+              <span className="font-medium text-foreground">
+                {origin || "Not set"}
+              </span>
             </div>
             {!origin && (
               <p className="text-xs text-destructive">
@@ -157,22 +159,26 @@ export function AddRouteDialog({ open, onClose }: AddRouteDialogProps) {
           {/* Route Preview */}
           {origin && destination && vehicleType && fare && (
             <div className="p-4 bg-primary/5 rounded-xl">
-              <p className="text-sm text-muted-foreground mb-2 text-center">Route Preview</p>
+              <p className="text-sm text-muted-foreground mb-2 text-center">
+                Route Preview
+              </p>
               <div className="flex items-center justify-center gap-2 mb-2">
                 <span className="font-medium">{origin}</span>
                 <span className="text-muted-foreground">→</span>
                 <span className="font-medium">{destination}</span>
               </div>
               <div className="flex items-center justify-center gap-2 mb-2">
-                {vehicleType === 'highroof' ? (
+                {vehicleType === "highroof" ? (
                   <Car className="w-4 h-4 text-muted-foreground" />
                 ) : (
                   <Bus className="w-4 h-4 text-muted-foreground" />
                 )}
-                <span className="text-sm text-muted-foreground capitalize">{vehicleType}</span>
+                <span className="text-sm text-muted-foreground capitalize">
+                  {vehicleType}
+                </span>
               </div>
               <p className="text-lg font-bold text-primary text-center">
-                Rs. {parseFloat(fare || '0').toLocaleString()}
+                Rs. {parseFloat(fare || "0").toLocaleString()}
               </p>
             </div>
           )}

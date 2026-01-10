@@ -1,12 +1,12 @@
-import { useState } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/router';
-import { Button } from '../components/ui/button';
-import { VoucherCard } from '../components/VoucherCard';
-import { CreateVoucherDialog } from '../components/CreateVoucherDialog';
-import { useBooking } from '../contexts/BookingContext';
-import { Plus, ArrowLeft, FileText } from 'lucide-react';
-import { formatDateFull } from '../utils/dateUtils';
+import { useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/router";
+import { Button } from "../components/ui/button";
+import { VoucherCard } from "../components/VoucherCard";
+import { CreateVoucherDialog } from "../components/CreateVoucherDialog";
+import { useBooking } from "../contexts/BookingContext";
+import { Plus, ArrowLeft, FileText } from "lucide-react";
+import { formatDateFull } from "../utils/dateUtils";
 
 export default function VouchersPage() {
   const router = useRouter();
@@ -21,8 +21,8 @@ export default function VouchersPage() {
     return acc;
   }, {} as Record<string, typeof vouchers>);
 
-  const sortedDates = Object.keys(groupedVouchers).sort((a, b) =>
-    new Date(b).getTime() - new Date(a).getTime()
+  const sortedDates = Object.keys(groupedVouchers).sort(
+    (a, b) => new Date(b).getTime() - new Date(a).getTime()
   );
 
   return (
@@ -30,7 +30,7 @@ export default function VouchersPage() {
       <header className="border-b bg-card sticky top-0 z-10">
         <div className="container max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Link href="/">
+            <Link href="/manage">
               <Button variant="ghost" size="icon">
                 <ArrowLeft className="w-5 h-5" />
               </Button>
@@ -55,7 +55,9 @@ export default function VouchersPage() {
               <FileText className="w-8 h-8 text-muted-foreground" />
             </div>
             <h2 className="text-xl font-semibold mb-2">Add Vehicles First</h2>
-            <p className="text-muted-foreground mb-6">You need to add vehicles before creating vouchers</p>
+            <p className="text-muted-foreground mb-6">
+              You need to add vehicles before creating vouchers
+            </p>
             <Link href="/vehicles">
               <Button size="lg" className="gap-2">
                 <Plus className="w-4 h-4" />
@@ -69,8 +71,14 @@ export default function VouchersPage() {
               <FileText className="w-8 h-8 text-muted-foreground" />
             </div>
             <h2 className="text-xl font-semibold mb-2">No Vouchers Yet</h2>
-            <p className="text-muted-foreground mb-6">Create your first daily voucher to start booking seats</p>
-            <Button onClick={() => setShowCreateDialog(true)} size="lg" className="gap-2">
+            <p className="text-muted-foreground mb-6">
+              Create your first daily voucher to start booking seats
+            </p>
+            <Button
+              onClick={() => setShowCreateDialog(true)}
+              size="lg"
+              className="gap-2"
+            >
               <Plus className="w-4 h-4" />
               Create Your First Voucher
             </Button>
