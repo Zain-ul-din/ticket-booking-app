@@ -24,6 +24,9 @@ const createWindow = async () => {
     return printers;
   });
 
+  mainWindow.loadFile(path.join(__dirname, "../out/index.html"));
+  return;
+
   if (isDev) {
     // 開發階段直接與 React 連線
     mainWindow.loadURL("http://localhost:3000/");
@@ -31,7 +34,7 @@ const createWindow = async () => {
     // mainWindow.webContents.openDevTools();
   } else {
     // 產品階段直接讀取 React 打包好的
-    mainWindow.loadFile("./build/index.html");
+    mainWindow.loadFile(path.join(__dirname, "../out/index.html"));
   }
 };
 

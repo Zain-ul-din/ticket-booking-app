@@ -8,10 +8,12 @@
     "next-dev": "next dev",
     "electron-dev": "wait-on tcp:3000 && electron .",
     "build": "next build",
+    "export": "next export",
     "start": "next start",
     "lint": "next lint",
     "test:print": "node ./test/print.js",
-    "dist": "electron-builder"
+    "dist": "electron-builder",
+    "prod": "NODE_ENV=production electron ."
   },
   "build": {
     "npmRebuild": false,

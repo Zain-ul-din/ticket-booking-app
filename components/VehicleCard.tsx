@@ -1,8 +1,8 @@
-import { Vehicle } from '../types/booking';
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { Button } from './ui/button';
-import { Bus, Car, Trash2, Users } from 'lucide-react';
-import { SeatMap } from './SeatMap';
+import { Vehicle } from "../types/booking";
+import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+import { Button } from "./ui/button";
+import { Bus, Car, Trash2, Users } from "lucide-react";
+import { SeatMap } from "./SeatMap";
 
 interface VehicleCardProps {
   vehicle: Vehicle;
@@ -11,12 +11,19 @@ interface VehicleCardProps {
   showSeats?: boolean;
 }
 
-export function VehicleCard({ vehicle, onDelete, onClick, showSeats = false }: VehicleCardProps) {
-  const Icon = vehicle.type === 'bus' ? Bus : Car;
+export function VehicleCard({
+  vehicle,
+  onDelete,
+  onClick,
+  showSeats = false,
+}: VehicleCardProps) {
+  const Icon = vehicle.type === "bus" ? Bus : Car;
 
   return (
     <Card
-      className={`overflow-hidden transition-all ${onClick ? 'cursor-pointer hover:border-primary hover:shadow-md' : ''}`}
+      className={`overflow-hidden transition-all ${
+        onClick ? "cursor-pointer hover:border-primary hover:shadow-md" : ""
+      }`}
       onClick={onClick}
     >
       <CardHeader className="pb-3">
@@ -52,12 +59,14 @@ export function VehicleCard({ vehicle, onDelete, onClick, showSeats = false }: V
           <Users className="w-4 h-4" />
           <span>{vehicle.totalSeats} seats</span>
           <span className="text-muted">•</span>
-          <span className="capitalize">{vehicle.type === 'highroof' ? 'High Roof' : 'Bus'}</span>
+          <span className="capitalize">
+            {vehicle.type === "highroof" ? "High Roof" : "Bus"}
+          </span>
         </div>
 
         {showSeats && (
           <div className="mt-4 p-4 bg-muted/30 rounded-xl">
-            <SeatMap seats={vehicle.seats} readOnly compact />
+            <SeatMap seats={vehicle.seats} readOnly compact hideLabels />
           </div>
         )}
       </CardContent>

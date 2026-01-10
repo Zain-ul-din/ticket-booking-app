@@ -2,13 +2,16 @@
  * Seat layout generation utilities for different vehicle types
  */
 
-import { Seat } from '../types/booking';
+import { Seat } from "../types/booking";
 
 /**
  * Generate seat layout for a Highroof van
- * Layout: 12 passenger seats (no driver)
+ * Layout: 18 passenger seats (no driver)
  *
  * Visual layout:
+ *     [1] [2]
+ *     [3]
+ *
  *     Row 0: [ 1 ]  [ 2 ]  [ 3 ]
  *     Row 1: [ 4 ]  [ 5 ]  [ 6 ]
  *     Row 2: [ 7 ]  [ 8 ]  [ 9 ]
@@ -17,24 +20,35 @@ import { Seat } from '../types/booking';
  * @returns Array of Seat objects for highroof van
  */
 export function generateHighroofLayout(): Seat[] {
-  const seats: Seat[] = [];
-  let seatId = 1;
+  return [
+    // Row 0 (Front)
+    { id: 2, row: 0, col: 0, isFolding: false, isDriver: false },
+    { id: 1, row: 0, col: 1, isFolding: false, isDriver: false },
 
-  // 4 rows × 3 columns = 12 seats (no driver)
-  for (let row = 0; row < 4; row++) {
-    for (let col = 0; col < 3; col++) {
-      const isFolding = row === 3; // Last row are folding seats
-      seats.push({
-        id: seatId++,
-        row,
-        col,
-        isFolding,
-        isDriver: false,
-      });
-    }
-  }
+    // Row 1
+    { id: 6, row: 1, col: 0, isFolding: false, isDriver: false },
+    { id: 5, row: 1, col: 1, isFolding: false, isDriver: false },
+    { id: 4, row: 1, col: 2, isFolding: false, isDriver: false },
+    { id: 3, row: 1, col: 3, isFolding: false, isDriver: false },
 
-  return seats;
+    // Row 2
+    { id: 9, row: 2, col: 0, isFolding: false, isDriver: false },
+    { id: 8, row: 2, col: 2, isFolding: false, isDriver: false },
+    { id: 7, row: 2, col: 3, isFolding: false, isDriver: false },
+    { id: -1, row: 2, col: 1, isFolding: true, isDriver: false }, // F
+
+    // Row 3
+    { id: 12, row: 3, col: 0, isFolding: false, isDriver: false },
+    { id: 11, row: 3, col: 2, isFolding: false, isDriver: false },
+    { id: 10, row: 3, col: 3, isFolding: false, isDriver: false },
+    { id: -2, row: 3, col: 1, isFolding: true, isDriver: false }, // F
+
+    // Row 4 (Back)
+    { id: 16, row: 4, col: 0, isFolding: false, isDriver: false },
+    { id: 15, row: 4, col: 1, isFolding: false, isDriver: false },
+    { id: 14, row: 4, col: 2, isFolding: false, isDriver: false },
+    { id: 13, row: 4, col: 3, isFolding: false, isDriver: false },
+  ];
 }
 
 /**
@@ -64,4 +78,3 @@ export function generateBusLayout(rows: number = 12, cols: number = 4): Seat[] {
 
   return seats;
 }
-
