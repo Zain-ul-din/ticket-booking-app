@@ -89,6 +89,7 @@ export function SeatMap({
               }
 
               const booking = getSeatBooking(seat.id);
+              const isSelected = isSeatSelected(seat.id);
 
               const seatContent = booking ? (
                 // Booked: show gender emoji + seat number
@@ -111,7 +112,10 @@ export function SeatMap({
                 <button
                   key={seat.id}
                   type="button"
-                  className={getSeatClass(seat, booking)}
+                  className={cn(
+                    getSeatClass(seat, booking),
+                    isSelected && "seat-selected"
+                  )}
                   onClick={() => handleSeatClick(seat)}
                   disabled={readOnly}
                 >
@@ -173,7 +177,7 @@ export function SeatMap({
           >
             <div className="flex flex-col items-center justify-center gap-0.5">
               <span className="text-xs leading-none">👨</span>
-              <span className="text-[10px] font-semibold leading-none">2</span>
+              {/* <span className="text-[10px] font-semibold leading-none">2</span> */}
             </div>
           </div>
           <span className="text-muted-foreground">Booked</span>

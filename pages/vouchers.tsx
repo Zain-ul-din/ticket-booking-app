@@ -12,10 +12,12 @@ import { Voucher } from "../types/booking";
 
 export default function VouchersPage() {
   const router = useRouter();
-  const { vouchers, vehicles, removeVoucher, updateVoucher, getVehicleById } = useBooking();
+  const { vouchers, vehicles, removeVoucher, updateVoucher, getVehicleById } =
+    useBooking();
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [departureDialogOpen, setDepartureDialogOpen] = useState(false);
-  const [selectedVoucherForDeparture, setSelectedVoucherForDeparture] = useState<Voucher | null>(null);
+  const [selectedVoucherForDeparture, setSelectedVoucherForDeparture] =
+    useState<Voucher | null>(null);
 
   // Group vouchers by date
   const groupedVouchers = vouchers.reduce((acc, voucher) => {
@@ -38,10 +40,10 @@ export default function VouchersPage() {
     if (!selectedVoucherForDeparture) return;
 
     updateVoucher(selectedVoucherForDeparture.id, {
-      status: 'departed',
+      status: "departed",
       terminalTax,
       cargo,
-      departedAt: new Date().toISOString()
+      departedAt: new Date().toISOString(),
     });
 
     setDepartureDialogOpen(false);
@@ -49,10 +51,10 @@ export default function VouchersPage() {
   };
 
   const handleMarkClosed = (voucherId: string) => {
-    if (confirm('Mark this voucher as closed? This action cannot be undone.')) {
+    if (confirm("Mark this voucher as closed? This action cannot be undone.")) {
       updateVoucher(voucherId, {
-        status: 'closed',
-        closedAt: new Date().toISOString()
+        status: "closed",
+        closedAt: new Date().toISOString(),
       });
     }
   };
@@ -140,7 +142,8 @@ export default function VouchersPage() {
           </div>
         )}
       </main>
-
+      {/* 
+      {}
       <DepartureSummaryDialog
         open={departureDialogOpen}
         onClose={() => {
@@ -148,9 +151,13 @@ export default function VouchersPage() {
           setSelectedVoucherForDeparture(null);
         }}
         voucher={selectedVoucherForDeparture!}
-        vehicle={selectedVoucherForDeparture ? getVehicleById(selectedVoucherForDeparture.vehicleId) : undefined}
+        vehicle={
+          selectedVoucherForDeparture
+            ? getVehicleById(selectedVoucherForDeparture.vehicleId)
+            : undefined
+        }
         onConfirm={handleConfirmDeparture}
-      />
+      /> */}
 
       <CreateVoucherDialog
         open={showCreateDialog}

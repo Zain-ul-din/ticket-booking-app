@@ -35,13 +35,13 @@ export function generateHighroofLayout(): Seat[] {
     { id: 9, row: 2, col: 0, isFolding: false, isDriver: false },
     { id: 8, row: 2, col: 2, isFolding: false, isDriver: false },
     { id: 7, row: 2, col: 3, isFolding: false, isDriver: false },
-    { id: -1, row: 2, col: 1, isFolding: true, isDriver: false }, // F
+    { id: 17, row: 2, col: 1, isFolding: true, isDriver: false }, // F
 
     // Row 3
     { id: 12, row: 3, col: 0, isFolding: false, isDriver: false },
     { id: 11, row: 3, col: 2, isFolding: false, isDriver: false },
     { id: 10, row: 3, col: 3, isFolding: false, isDriver: false },
-    { id: -2, row: 3, col: 1, isFolding: true, isDriver: false }, // F
+    { id: 18, row: 3, col: 1, isFolding: true, isDriver: false }, // F
 
     // Row 4 (Back)
     { id: 16, row: 4, col: 0, isFolding: false, isDriver: false },
