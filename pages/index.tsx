@@ -8,7 +8,7 @@ import { formatDateFull } from "../utils/dateUtils";
 
 export default function Home() {
   const router = useRouter();
-  const { vouchers, vehicles, removeVoucher, getVehicleById } = useBooking();
+  const { vouchers, vehicles, getVehicleById } = useBooking();
 
   // Group vouchers by date
   const groupedVouchers = vouchers.reduce((acc, voucher) => {
@@ -78,7 +78,6 @@ export default function Home() {
                       key={voucher.id}
                       voucher={voucher}
                       vehicle={getVehicleById(voucher.vehicleId)}
-                      onDelete={() => removeVoucher(voucher.id)}
                       onClick={() => router.push(`/booking/${voucher.id}`)}
                     />
                   ))}

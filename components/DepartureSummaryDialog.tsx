@@ -7,6 +7,16 @@ import {
   DialogTitle,
   DialogFooter,
 } from './ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from './ui/alert-dialog';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
@@ -23,7 +33,8 @@ interface DepartureSummaryDialogProps {
   onClose: () => void;
   voucher: Voucher;
   vehicle: Vehicle | undefined;
-  onConfirm: (terminalTax: number, cargo: number) => void;
+  onConfirm?: (terminalTax: number, cargo: number) => void;
+  printOnly?: boolean;
 }
 
 export function DepartureSummaryDialog({
@@ -32,11 +43,13 @@ export function DepartureSummaryDialog({
   voucher,
   vehicle,
   onConfirm,
+  printOnly = false,
 }: DepartureSummaryDialogProps) {
   const { terminalInfo } = useTerminal();
   const [terminalTax, setTerminalTax] = useState('0');
   const [cargo, setCargo] = useState('0');
   const [error, setError] = useState('');
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
   // Calculate financial summary
   const summary = useMemo(() => {
@@ -48,11 +61,21 @@ export function DepartureSummaryDialog({
   const handleConfirm = () => {
     try {
       setError('');
-      const validatedTax = validateFinancialInput(terminalTax, 'Terminal tax');
-      const validatedCargo = validateFinancialInput(cargo, 'Cargo');
-      onConfirm(validatedTax, validatedCargo);
+      validateFinancialInput(terminalTax, 'Terminal tax');
+      validateFinancialInput(cargo, 'Cargo');
+      // Show confirmation dialog
+      setShowConfirmDialog(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Invalid input');
+    }
+  };
+
+  const handleFinalConfirm = () => {
+    const validatedTax = parseFloat(terminalTax) || 0;
+    const validatedCargo = parseFloat(cargo) || 0;
+    setShowConfirmDialog(false);
+    if (onConfirm) {
+      onConfirm(validatedTax, validatedCargo);
     }
   };
 
@@ -236,7 +259,7 @@ export function DepartureSummaryDialog({
 
         <DialogFooter className="gap-2 sm:gap-0">
           <Button type="button" variant="outline" onClick={handleClose} className="h-12">
-            Cancel
+            {printOnly ? 'Close' : 'Cancel'}
           </Button>
           <Button
             type="button"
@@ -247,16 +270,38 @@ export function DepartureSummaryDialog({
             <Printer className="w-4 h-4" />
             Print Summary
           </Button>
-          <Button
-            type="button"
-            onClick={handleConfirm}
-            variant="destructive"
-            className="h-12 px-8"
-          >
-            Confirm Departure
-          </Button>
+          {!printOnly && onConfirm && (
+            <Button
+              type="button"
+              onClick={handleConfirm}
+              variant="destructive"
+              className="h-12 px-8"
+            >
+              Confirm Departure
+            </Button>
+          )}
         </DialogFooter>
       </DialogContent>
+
+      {/* Confirmation Alert Dialog */}
+      <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirm Departure</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to mark this voucher as departed? This action will prevent any further bookings or modifications.
+              <br /><br />
+              <strong>Grand Total: Rs. {summary.grandTotal.toLocaleString()}</strong>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleFinalConfirm} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Yes, Mark as Departed
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Dialog>
   );
 }

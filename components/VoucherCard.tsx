@@ -3,7 +3,6 @@ import { Card, CardContent, CardHeader } from './ui/card';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { VoucherStateBadge } from './VoucherStateBadge';
-import { VoucherStateActions } from './VoucherStateActions';
 import { Bus, Car, Clock, MapPin, Phone, User, Trash2, Edit2, ChevronRight } from 'lucide-react';
 import { formatDate } from '../utils/dateUtils';
 import { getVoucherStatus } from '../utils/voucherUtils';
@@ -15,11 +14,9 @@ interface VoucherCardProps {
   onEdit?: () => void;
   onDelete?: () => void;
   onClick?: () => void;
-  onMarkDeparted?: () => void;
-  onMarkClosed?: () => void;
 }
 
-export function VoucherCard({ voucher, vehicle, onEdit, onDelete, onClick, onMarkDeparted, onMarkClosed }: VoucherCardProps) {
+export function VoucherCard({ voucher, vehicle, onEdit, onDelete, onClick }: VoucherCardProps) {
   const bookedCount = voucher.bookedSeats.length;
   const totalSeats = vehicle?.totalSeats || 0;
   const Icon = vehicle?.type === 'bus' ? Bus : Car;
@@ -53,14 +50,6 @@ export function VoucherCard({ voucher, vehicle, onEdit, onDelete, onClick, onMar
             <Badge variant={bookedCount === totalSeats ? 'default' : 'secondary'}>
               {bookedCount}/{totalSeats}
             </Badge>
-            {onMarkDeparted && onMarkClosed && (
-              <VoucherStateActions
-                voucher={voucher}
-                onMarkDeparted={onMarkDeparted}
-                onMarkClosed={onMarkClosed}
-                variant="compact"
-              />
-            )}
             {onEdit && (
               <Button
                 variant="ghost"

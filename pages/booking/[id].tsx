@@ -68,6 +68,7 @@ export default function BookingPage() {
 
   // Voucher state management
   const [showDepartureDialog, setShowDepartureDialog] = useState(false);
+  const [departurePrintOnly, setDeparturePrintOnly] = useState(false);
 
   // Check if bookings can be edited based on voucher status
   const canEdit = voucher ? canEditVoucher(voucher) : true;
@@ -221,7 +222,13 @@ export default function BookingPage() {
     await printTicket(ticket, vehicle, voucher, terminalInfo.name, terminalInfo.contactNumber);
   };
 
+  const handlePrintVoucherSummary = () => {
+    setDeparturePrintOnly(true);
+    setShowDepartureDialog(true);
+  };
+
   const handleMarkDeparted = () => {
+    setDeparturePrintOnly(false);
     setShowDepartureDialog(true);
   };
 
@@ -233,6 +240,7 @@ export default function BookingPage() {
       departedAt: new Date().toISOString(),
     });
     setShowDepartureDialog(false);
+    setDeparturePrintOnly(false);
   };
 
   const handleMarkClosed = () => {
@@ -359,6 +367,18 @@ export default function BookingPage() {
                 </div>
               </CardContent>
             </Card>
+
+            {/* Print Voucher Summary Button */}
+            {getVoucherStatus(voucher) === 'boarding' && (
+              <Button
+                variant="outline"
+                onClick={handlePrintVoucherSummary}
+                className="w-full gap-2 h-12"
+              >
+                <Printer className="w-5 h-5" />
+                Print Voucher Summary
+              </Button>
+            )}
 
             {/* Voucher State Actions */}
             <VoucherStateActions
@@ -522,10 +542,14 @@ export default function BookingPage() {
       {/* Departure Summary Dialog */}
       <DepartureSummaryDialog
         open={showDepartureDialog}
-        onClose={() => setShowDepartureDialog(false)}
+        onClose={() => {
+          setShowDepartureDialog(false);
+          setDeparturePrintOnly(false);
+        }}
         voucher={voucher}
         vehicle={vehicle}
-        onConfirm={handleConfirmDeparture}
+        onConfirm={departurePrintOnly ? undefined : handleConfirmDeparture}
+        printOnly={departurePrintOnly}
       />
     </div>
   );

@@ -1,5 +1,5 @@
 {
-  "name": "google_photos_viewer",
+  "name": "ticket-booking-app",
   "version": "0.1.0",
   "private": true,
   "main": "electron/main.js",
@@ -7,8 +7,7 @@
     "dev": "concurrently --kill-others \"npm run next-dev\" \"npm run electron-dev\"",
     "next-dev": "next dev",
     "electron-dev": "wait-on tcp:3000 && electron .",
-    "build": "next build",
-    "export": "next export",
+    "build": "next build && next export",
     "start": "next start",
     "lint": "next lint",
     "test:print": "node ./test/print.js",
@@ -16,9 +15,9 @@
     "prod": "NODE_ENV=production electron ."
   },
   "build": {
-    "npmRebuild": false,
-    "appId": "com.mycompany.googlephotosviewer",
-    "productName": "Google Photos Viewer",
+    "npmRebuild": true,
+    "appId": "com.mycompany.ticketbookingapp",
+    "productName": "Ticket Booking App",
     "directories": {
       "buildResources": "assets",
       "output": "dist"
@@ -64,6 +63,7 @@
     "escpos-usb": "^3.0.0-alpha.4",
     "eslint": "8.31.0",
     "eslint-config-next": "13.1.1",
+    "get-port-please": "^3.2.0",
     "lucide-react": "^0.562.0",
     "next": "13.1.1",
     "postcss": "^8.4.20",

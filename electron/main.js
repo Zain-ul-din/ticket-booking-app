@@ -1,7 +1,11 @@
-const { app, BrowserWindow, dialog, ipcMain } = require("electron");
+const { app, BrowserWindow, dialog, ipcMain, protocol, Menu } = require("electron");
 const path = require("path");
 const isDev = require("electron-is-dev");
 const printService = require("./services/printer.js");
+const fs = require("fs");
+
+// Check if we're in development mode (respect NODE_ENV override)
+const isDevMode = process.env.NODE_ENV !== "production" && isDev;
 
 const createWindow = async () => {
   const mainWindow = new BrowserWindow({
@@ -11,7 +15,11 @@ const createWindow = async () => {
       preload: path.join(__dirname, "preload.js"),
       // nodeIntegration: true,
     },
+    autoHideMenuBar: true, // Hide menu bar (can be shown with Alt key)
   });
+
+  // Remove the menu completely
+  Menu.setApplicationMenu(null);
 
   ipcMain.handle("print-receipt", async (event, ticketData) => {
     try {
@@ -40,26 +48,52 @@ const createWindow = async () => {
     return printers;
   });
 
-  if (isDev) {
-    // 開發階段直接與 React 連線
+  if (isDevMode) {
+    // Development mode - connect to Next.js dev server
     mainWindow.loadURL("http://localhost:3000/");
-    // 開啟 DevTools.
     // mainWindow.webContents.openDevTools();
   } else {
-    // 產品階段直接讀取 React 打包好的
-    mainWindow.loadFile(path.join(__dirname, "../out/index.html"));
+    // Production mode - load via custom protocol
+    mainWindow.loadURL("app://./index.html");
   }
 };
 
-(async () => {
-  app.whenReady().then(async () => {
-    createWindow();
-    app.on("activate", function () {
-      if (BrowserWindow.getAllWindows().length === 0) createWindow();
-    });
-  });
+// Set up custom protocol scheme for production
+if (!isDevMode) {
+  protocol.registerSchemesAsPrivileged([
+    {
+      scheme: "app",
+      privileges: {
+        standard: true,
+        secure: true,
+        supportFetchAPI: true,
+        corsEnabled: false,
+      },
+    },
+  ]);
+}
 
-  app.on("window-all-closed", function () {
-    if (process.platform !== "darwin") app.quit();
+app.whenReady().then(() => {
+  // Register file protocol handler for production
+  if (!isDevMode) {
+    protocol.registerFileProtocol("app", (request, callback) => {
+      const url = request.url.replace("app://", "");
+      try {
+        return callback(path.join(__dirname, "../out", url));
+      } catch (error) {
+        console.error("Protocol error:", error);
+        return callback({ error: -2 });
+      }
+    });
+  }
+
+  createWindow();
+
+  app.on("activate", function () {
+    if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });
-})();
+});
+
+app.on("window-all-closed", function () {
+  if (process.platform !== "darwin") app.quit();
+});

@@ -148,10 +148,14 @@ function printTicket(data) {
             printer.text(lineLR(line, ""));
           });
 
-          // Number
+          // Booking number and helpline
           printer.text("");
+          printer.size(0, 0);
+          printer.align("CT");
           if (ticket.terminalPhone) {
-            printer.text(lineLR("", `Booking No: ${ticket.terminalPhone}`));
+            printer.text(lineLR(`Booking: ${ticket.terminalPhone}`, "Helpline: 15-6"));
+          } else {
+            printer.text(lineLR("", "Helpline: 15-6"));
           }
           printer.style("NORMAL");
 

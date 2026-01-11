@@ -2,6 +2,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { Button } from "../components/ui/button";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "../components/ui/tabs";
 import { VoucherCard } from "../components/VoucherCard";
 import { CreateVoucherDialog } from "../components/CreateVoucherDialog";
 import { EditVoucherDialog } from "../components/EditVoucherDialog";
@@ -21,14 +22,25 @@ export default function VouchersPage() {
   const [departureDialogOpen, setDepartureDialogOpen] = useState(false);
   const [selectedVoucherForDeparture, setSelectedVoucherForDeparture] =
     useState<Voucher | null>(null);
+  const [activeTab, setActiveTab] = useState("active");
 
-  // Group vouchers by date
-  const groupedVouchers = vouchers.reduce((acc, voucher) => {
+  // Filter vouchers by status
+  const activeVouchers = vouchers.filter(
+    (v) => !v.status || v.status === "boarding"
+  );
+  const departedVouchers = vouchers.filter(
+    (v) => v.status === "departed" || v.status === "closed"
+  );
+
+  // Group vouchers by date based on active tab
+  const currentVouchers = activeTab === "active" ? activeVouchers : departedVouchers;
+
+  const groupedVouchers = currentVouchers.reduce((acc, voucher) => {
     const date = voucher.date;
     if (!acc[date]) acc[date] = [];
     acc[date].push(voucher);
     return acc;
-  }, {} as Record<string, typeof vouchers>);
+  }, {} as Record<string, typeof currentVouchers>);
 
   const sortedDates = Object.keys(groupedVouchers).sort(
     (a, b) => new Date(b).getTime() - new Date(a).getTime()
@@ -60,6 +72,17 @@ export default function VouchersPage() {
         closedAt: new Date().toISOString(),
       });
     }
+  };
+
+  const handleEditVoucher = (voucher: Voucher) => {
+    setSelectedVoucherForEdit(voucher);
+    setShowEditDialog(true);
+  };
+
+  const handleSaveEdit = (voucherId: string, updates: Partial<Voucher>) => {
+    updateVoucher(voucherId, updates);
+    setShowEditDialog(false);
+    setSelectedVoucherForEdit(null);
   };
 
   return (
@@ -121,28 +144,84 @@ export default function VouchersPage() {
             </Button>
           </div>
         ) : (
-          <div className="space-y-8">
-            {sortedDates.map((date) => (
-              <div key={date}>
-                <h2 className="text-lg font-semibold text-muted-foreground mb-4">
-                  {formatDateFull(new Date(date))}
-                </h2>
-                <div className="grid gap-4">
-                  {groupedVouchers[date].map((voucher) => (
-                    <VoucherCard
-                      key={voucher.id}
-                      voucher={voucher}
-                      vehicle={getVehicleById(voucher.vehicleId)}
-                      onDelete={() => removeVoucher(voucher.id)}
-                      onClick={() => router.push(`/booking/${voucher.id}`)}
-                      onMarkDeparted={() => handleMarkDeparted(voucher)}
-                      onMarkClosed={() => handleMarkClosed(voucher.id)}
-                    />
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <div className="flex justify-center mb-6">
+              <TabsList>
+                <TabsTrigger value="active">Active</TabsTrigger>
+                <TabsTrigger value="departed">Departed</TabsTrigger>
+              </TabsList>
+            </div>
+
+            <TabsContent value="active">
+              {currentVouchers.length === 0 ? (
+                <div className="text-center py-16">
+                  <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-muted flex items-center justify-center">
+                    <FileText className="w-8 h-8 text-muted-foreground" />
+                  </div>
+                  <h2 className="text-xl font-semibold mb-2">No Active Vouchers</h2>
+                  <p className="text-muted-foreground">
+                    All vouchers have been marked as departed or closed
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-8">
+                  {sortedDates.map((date) => (
+                    <div key={date}>
+                      <h2 className="text-lg font-semibold text-muted-foreground mb-4">
+                        {formatDateFull(new Date(date))}
+                      </h2>
+                      <div className="grid gap-4">
+                        {groupedVouchers[date].map((voucher) => (
+                          <VoucherCard
+                            key={voucher.id}
+                            voucher={voucher}
+                            vehicle={getVehicleById(voucher.vehicleId)}
+                            onEdit={() => handleEditVoucher(voucher)}
+                            onDelete={() => removeVoucher(voucher.id)}
+                            onClick={() => router.push(`/booking/${voucher.id}`)}
+                          />
+                        ))}
+                      </div>
+                    </div>
                   ))}
                 </div>
-              </div>
-            ))}
-          </div>
+              )}
+            </TabsContent>
+
+            <TabsContent value="departed">
+              {currentVouchers.length === 0 ? (
+                <div className="text-center py-16">
+                  <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-muted flex items-center justify-center">
+                    <FileText className="w-8 h-8 text-muted-foreground" />
+                  </div>
+                  <h2 className="text-xl font-semibold mb-2">No Departed Vouchers</h2>
+                  <p className="text-muted-foreground">
+                    No vouchers have been marked as departed or closed yet
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-8">
+                  {sortedDates.map((date) => (
+                    <div key={date}>
+                      <h2 className="text-lg font-semibold text-muted-foreground mb-4">
+                        {formatDateFull(new Date(date))}
+                      </h2>
+                      <div className="grid gap-4">
+                        {groupedVouchers[date].map((voucher) => (
+                          <VoucherCard
+                            key={voucher.id}
+                            voucher={voucher}
+                            vehicle={getVehicleById(voucher.vehicleId)}
+                            onClick={() => router.push(`/booking/${voucher.id}`)}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </TabsContent>
+          </Tabs>
         )}
       </main>
       {/* 
@@ -165,6 +244,16 @@ export default function VouchersPage() {
       <CreateVoucherDialog
         open={showCreateDialog}
         onClose={() => setShowCreateDialog(false)}
+      />
+
+      <EditVoucherDialog
+        open={showEditDialog}
+        onClose={() => {
+          setShowEditDialog(false);
+          setSelectedVoucherForEdit(null);
+        }}
+        voucher={selectedVoucherForEdit}
+        onSave={handleSaveEdit}
       />
     </div>
   );

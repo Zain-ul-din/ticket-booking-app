@@ -6,6 +6,8 @@ import { Badge } from "../components/ui/badge";
 import { useBooking } from "../contexts/BookingContext";
 import { useTerminal } from "../contexts/TerminalContext";
 import { AddRouteDialog } from "../components/AddRouteDialog";
+import { EditRouteDialog } from "../components/EditRouteDialog";
+import { Route } from "../types/booking";
 import {
   Plus,
   ArrowLeft,
@@ -14,17 +16,25 @@ import {
   ArrowRight,
   Bus,
   Car,
+  Edit2,
 } from "lucide-react";
 
 export default function RoutesPage() {
   const { routes, removeRoute } = useBooking();
   const { terminalInfo } = useTerminal();
   const [showAddDialog, setShowAddDialog] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [selectedRoute, setSelectedRoute] = useState<Route | null>(null);
 
   // Only show routes from terminal location
   const terminalRoutes = routes.filter(
     (route) => route.origin === terminalInfo?.city
   );
+
+  const handleEditRoute = (route: Route) => {
+    setSelectedRoute(route);
+    setShowEditDialog(true);
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -93,14 +103,24 @@ export default function RoutesPage() {
                       <ArrowRight className="w-4 h-4 text-muted-foreground" />
                       <span className="font-medium">{route.destination}</span>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="text-muted-foreground hover:text-destructive"
-                      onClick={() => removeRoute(route.id)}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
+                    <div className="flex items-center gap-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="text-muted-foreground hover:text-primary"
+                        onClick={() => handleEditRoute(route)}
+                      >
+                        <Edit2 className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="text-muted-foreground hover:text-destructive"
+                        onClick={() => removeRoute(route.id)}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
                   </div>
 
                   <div className="flex items-center gap-2 mb-3">
@@ -134,6 +154,15 @@ export default function RoutesPage() {
       <AddRouteDialog
         open={showAddDialog}
         onClose={() => setShowAddDialog(false)}
+      />
+
+      <EditRouteDialog
+        open={showEditDialog}
+        onClose={() => {
+          setShowEditDialog(false);
+          setSelectedRoute(null);
+        }}
+        route={selectedRoute}
       />
     </div>
   );
