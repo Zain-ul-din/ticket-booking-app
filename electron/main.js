@@ -1,4 +1,11 @@
-const { app, BrowserWindow, dialog, ipcMain, protocol, Menu } = require("electron");
+const {
+  app,
+  BrowserWindow,
+  dialog,
+  ipcMain,
+  protocol,
+  Menu,
+} = require("electron");
 const path = require("path");
 const isDev = require("electron-is-dev");
 const printService = require("./services/printer.js");
@@ -11,6 +18,7 @@ const createWindow = async () => {
   const mainWindow = new BrowserWindow({
     width: 1366,
     height: 768,
+    icon: path.join(__dirname, "../assets/icon.ico"), // App icon
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
       // nodeIntegration: true,

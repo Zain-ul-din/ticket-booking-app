@@ -103,10 +103,6 @@
     @apply bg-background text-foreground font-sans antialiased;
     font-family: "Inter", sans-serif;
   }
-
-  html {
-    font-size: 19px;
-  }
 }
 
 @layer components {
