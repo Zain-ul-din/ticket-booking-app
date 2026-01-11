@@ -76,4 +76,4 @@ yarn dev
 
 <hr>
 
-[Download Link](https://mega.nz/file/1V0kzLqB#Dxok5_EuvfChNbZUV38DCmNuMKZidcJ1xWz-Alkm1PQ)
+[Download Link](https://mega.nz/file/UdkHiQTA#n4kEHzRw4w7RvwcUEM6m-eYoGAKOgBqehJOEfsSZ7eE)
